@@ -159,6 +159,53 @@
             font-weight: bold;
             color: white;
         }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .search-box {
+            background: white;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus-within {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -190,13 +237,14 @@
         <!-- Main Content -->
         <div class="py-8 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Tombol Kembali -->
-                <div class="mb-6">
-                    <a href="{{ route('admin.dashboard') }}"
-                    class="inline-flex items-center px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-150">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        Kembali
-                    </a>
-                </div>      
+            <div class="mb-6">
+                <a href="{{ route('admin.dashboard') }}"
+                class="inline-flex items-center px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-150">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Kembali
+                </a>
+            </div>
+
             <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
                 <!-- Card Header -->
                 <div class="border-b border-gray-100 p-6">
@@ -279,16 +327,22 @@
 
                     <!-- Data Guru -->
                     <div class="mb-10">
-                        <div class="flex items-center justify-between mb-6">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                             <div class="flex items-center">
                                 <div class="p-2 rounded-lg bg-blue-100 text-blue-600 mr-3">
                                     <i class="fas fa-chalkboard-teacher"></i>
                                 </div>
                                 <h3 class="text-xl font-bold text-blue-700">Daftar Guru</h3>
                             </div>
-                            <span class="text-sm text-gray-500 bg-blue-50 px-3 py-1 rounded-full">
-                                {{ $gurus->count() }} data guru
-                            </span>
+                            <div class="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+                                <div class="search-box flex items-center w-full md:w-64">
+                                    <i class="fas fa-search text-gray-400 mr-2"></i>
+                                    <input type="text" id="searchGuru" placeholder="Cari nama guru..." class="w-full focus:outline-none">
+                                </div>
+                                <span class="text-sm text-gray-500 bg-blue-50 px-3 py-2 rounded-full self-start">
+                                    {{ $gurus->count() }} data guru
+                                </span>
+                            </div>
                         </div>
 
                         <div class="overflow-x-auto rounded-xl border border-gray-200">
@@ -313,9 +367,9 @@
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-gray-100">
+                                <tbody class="divide-y divide-gray-100" id="guruTableBody">
                                     @forelse($gurus as $index => $guru)
-                                        <tr class="table-row group">
+                                        <tr class="table-row group" data-name="{{ strtolower($guru->nama) }}" data-username="{{ strtolower($guru->username) }}">
                                             <td class="p-4 text-center text-gray-600 font-medium">
                                                 {{ $index + 1 }}
                                             </td>
@@ -334,11 +388,15 @@
                                             </td>
                                             <td class="p-4">
                                                 <div class="flex justify-center space-x-2">
-                                                    <a href="{{ route('user.edit', $guru->id) }}"
-                                                       class="btn-warning action-btn inline-flex items-center">
+                                                    <button type="button"
+                                                            class="btn-warning action-btn inline-flex items-center edit-btn"
+                                                            data-id="{{ $guru->id }}"
+                                                            data-nama="{{ $guru->nama }}"
+                                                            data-username="{{ $guru->username }}"
+                                                            data-role="guru">
                                                         <i class="fas fa-edit mr-1"></i>
                                                         Edit
-                                                    </a>
+                                                    </button>
                                                     <form action="{{ route('user.destroy', $guru->id) }}" method="POST" class="inline">
                                                         @csrf
                                                         @method('DELETE')
@@ -372,16 +430,22 @@
 
                     <!-- Data Siswa -->
                     <div>
-                        <div class="flex items-center justify-between mb-6">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                             <div class="flex items-center">
                                 <div class="p-2 rounded-lg bg-green-100 text-green-600 mr-3">
                                     <i class="fas fa-user-graduate"></i>
                                 </div>
                                 <h3 class="text-xl font-bold text-green-700">Daftar Siswa</h3>
                             </div>
-                            <span class="text-sm text-gray-500 bg-green-50 px-3 py-1 rounded-full">
-                                {{ $siswas->count() }} data siswa
-                            </span>
+                            <div class="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+                                <div class="search-box flex items-center w-full md:w-64">
+                                    <i class="fas fa-search text-gray-400 mr-2"></i>
+                                    <input type="text" id="searchSiswa" placeholder="Cari nama siswa..." class="w-full focus:outline-none">
+                                </div>
+                                <span class="text-sm text-gray-500 bg-green-50 px-3 py-2 rounded-full self-start">
+                                    {{ $siswas->count() }} data siswa
+                                </span>
+                            </div>
                         </div>
 
                         <div class="overflow-x-auto rounded-xl border border-gray-200">
@@ -406,9 +470,9 @@
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-gray-100">
+                                <tbody class="divide-y divide-gray-100" id="siswaTableBody">
                                     @forelse($siswas as $index => $siswa)
-                                        <tr class="table-row group">
+                                        <tr class="table-row group" data-name="{{ strtolower($siswa->nama) }}" data-username="{{ strtolower($siswa->username) }}">
                                             <td class="p-4 text-center text-gray-600 font-medium">
                                                 {{ $index + 1 }}
                                             </td>
@@ -427,11 +491,15 @@
                                             </td>
                                             <td class="p-4">
                                                 <div class="flex justify-center space-x-2">
-                                                    <a href="{{ route('user.edit', $siswa->id) }}"
-                                                       class="btn-warning action-btn inline-flex items-center">
+                                                    <button type="button"
+                                                            class="btn-warning action-btn inline-flex items-center edit-btn"
+                                                            data-id="{{ $siswa->id }}"
+                                                            data-nama="{{ $siswa->nama }}"
+                                                            data-username="{{ $siswa->username }}"
+                                                            data-role="siswa">
                                                         <i class="fas fa-edit mr-1"></i>
                                                         Edit
-                                                    </a>
+                                                    </button>
                                                     <form action="{{ route('user.destroy', $siswa->id) }}" method="POST" class="inline">
                                                         @csrf
                                                         @method('DELETE')
@@ -467,10 +535,50 @@
         </div>
     </div>
 
+    <!-- Modal Edit User -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-gray-800">Edit Data</h3>
+                    <button type="button" id="closeModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <form id="editForm" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="p-6 space-y-4">
+                    <div>
+                        <label for="editNama" class="block text-sm font-medium text-gray-700 mb-1">Nama</label>
+                        <input type="text" id="editNama" name="nama" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                    </div>
+                    <div>
+                        <label for="editUsername" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                        <input type="text" id="editUsername" name="username" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                    </div>
+                    <div>
+                        <label for="editPassword" class="block text-sm font-medium text-gray-700 mb-1">Password Baru (Opsional)</label>
+                        <input type="password" id="editPassword" name="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Kosongkan jika tidak ingin mengubah">
+                    </div>
+                </div>
+                <div class="p-6 border-t border-gray-200 flex justify-end space-x-3">
+                    <button type="button" id="cancelEdit" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-150">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-150">
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Fungsi untuk file input
         const fileInputs = document.querySelectorAll('input[type="file"]');
-
         fileInputs.forEach(input => {
             input.addEventListener('change', function() {
                 const fileName = this.files[0]?.name || 'Tidak ada file dipilih';
@@ -483,7 +591,7 @@
             });
         });
 
-        // ✅ Konfirmasi hanya untuk tombol hapus
+        // Fungsi konfirmasi hapus
         const deleteButtons = document.querySelectorAll('form button.btn-danger');
         deleteButtons.forEach(button => {
             button.addEventListener('click', function(e) {
@@ -493,7 +601,7 @@
             });
         });
 
-        // Animasi hover baris tabel
+        // Fungsi animasi hover baris tabel
         const tableRows = document.querySelectorAll('.table-row');
         tableRows.forEach(row => {
             row.addEventListener('mouseenter', function() {
@@ -503,8 +611,92 @@
                 this.style.transform = 'scale(1)';
             });
         });
+
+        // Fungsi pencarian untuk data guru
+        const searchGuru = document.getElementById('searchGuru');
+        if (searchGuru) {
+            searchGuru.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#guruTableBody tr');
+
+                rows.forEach(row => {
+                    const name = row.getAttribute('data-name');
+                    const username = row.getAttribute('data-username');
+
+                    if (name.includes(searchTerm) || username.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // Fungsi pencarian untuk data siswa
+        const searchSiswa = document.getElementById('searchSiswa');
+        if (searchSiswa) {
+            searchSiswa.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#siswaTableBody tr');
+
+                rows.forEach(row => {
+                    const name = row.getAttribute('data-name');
+                    const username = row.getAttribute('data-username');
+
+                    if (name.includes(searchTerm) || username.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // Fungsi modal edit
+        const modal = document.getElementById('editModal');
+        const editForm = document.getElementById('editForm');
+        const closeModal = document.getElementById('closeModal');
+        const cancelEdit = document.getElementById('cancelEdit');
+        const editButtons = document.querySelectorAll('.edit-btn');
+
+        // Buka modal edit
+        editButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const nama = this.getAttribute('data-nama');
+                const username = this.getAttribute('data-username');
+                const role = this.getAttribute('data-role');
+
+                document.getElementById('editNama').value = nama;
+                document.getElementById('editUsername').value = username;
+
+                // Set action form berdasarkan role
+                if (role === 'guru') {
+                    editForm.action = "{{ route('user.update', '') }}/" + id;
+                } else {
+                    editForm.action = "{{ route('user.update', '') }}/" + id;
+                }
+
+                modal.style.display = 'flex';
+            });
+        });
+
+        // Tutup modal
+        function closeModalFunc() {
+            modal.style.display = 'none';
+        }
+
+        closeModal.addEventListener('click', closeModalFunc);
+        cancelEdit.addEventListener('click', closeModalFunc);
+
+        // Tutup modal jika klik di luar konten modal
+        window.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                closeModalFunc();
+            }
+        });
     });
-</script>
+    </script>
 
 </body>
 </html>
