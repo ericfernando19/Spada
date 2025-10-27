@@ -8,9 +8,26 @@ use App\Models\Siswa;
 
 class SiswaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $siswas = Siswa::latest()->paginate(10);
+        $query = Siswa::query();
+
+        // Search functionality
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', '%' . $search . '%')
+                    ->orWhere('nisn', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Filter by kelas
+        if ($request->has('kelas') && $request->kelas != '') {
+            $query->where('kelas', 'like', '%' . $request->kelas . '%');
+        }
+
+        $siswas = $query->latest()->paginate(10);
+
         return view('admin.siswa.index', compact('siswas'));
     }
 
