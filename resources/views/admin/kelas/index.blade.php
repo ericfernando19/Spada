@@ -140,6 +140,141 @@
             color: white;
             border-color: #10b981;
         }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            width: 90%;
+            max-width: 500px;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: #6b7280;
+            transition: color 0.2s;
+        }
+
+        .close-modal:hover {
+            color: #374151;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            background-color: white;
+            transition: all 0.2s;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        /* Filter Styles */
+        .filter-section {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .filter-active {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border-color: #059669 !important;
+        }
+
+        .filter-reset {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+
+        .hidden-row {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -180,7 +315,7 @@
                             </div>
                             <div>
                                 <h2 class="text-xl font-bold text-gray-800">Data Kelas</h2>
-                                <p class="text-gray-600 text-sm">Total {{ $kelas->total() }} kelas terdaftar</p>
+                                <p class="text-gray-600 text-sm">Total <span id="totalKelas">{{ $kelas->total() }}</span> kelas terdaftar</p>
                             </div>
                         </div>
 
@@ -190,11 +325,34 @@
                                 <i class="fas fa-arrow-left mr-2"></i>
                                 Kembali
                             </a>
-                            <a href="{{ route('kelas.create') }}"
-                               class="btn-primary inline-flex items-center px-4 py-3 rounded-xl text-white font-semibold shadow transition duration-150">
+                            <button id="openCreateModal"
+                                    class="btn-primary inline-flex items-center px-4 py-3 rounded-xl text-white font-semibold shadow transition duration-150">
                                 <i class="fas fa-plus mr-2"></i>
                                 Tambah Kelas
-                            </a>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter Section -->
+                <div class="filter-section">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <h3 class="font-semibold text-gray-800 mb-2">Filter Berdasarkan Tingkat</h3>
+                            <div class="flex flex-wrap gap-2">
+                                <button class="filter-btn px-4 py-2 rounded-lg transition-all duration-200 border border-gray-300 hover:shadow-md bg-white filter-active" data-tingkat="all">
+                                    <i class="fas fa-layer-group mr-2"></i>Semua Tingkat
+                                </button>
+                                <button class="filter-btn px-4 py-2 rounded-lg transition-all duration-200 border border-gray-300 hover:shadow-md bg-white" data-tingkat="X">
+                                    <i class="fas fa-graduation-cap mr-2"></i>Tingkat X
+                                </button>
+                                <button class="filter-btn px-4 py-2 rounded-lg transition-all duration-200 border border-gray-300 hover:shadow-md bg-white" data-tingkat="XI">
+                                    <i class="fas fa-graduation-cap mr-2"></i>Tingkat XI
+                                </button>
+                                <button class="filter-btn px-4 py-2 rounded-lg transition-all duration-200 border border-gray-300 hover:shadow-md bg-white" data-tingkat="XII">
+                                    <i class="fas fa-graduation-cap mr-2"></i>Tingkat XII
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -235,9 +393,9 @@
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-100">
+                            <tbody class="divide-y divide-gray-100" id="kelasTableBody">
                                 @forelse($kelas as $i => $k)
-                                    <tr class="table-row group">
+                                    <tr class="table-row group kelas-data" data-tingkat="{{ $k->tingkat }}">
                                         <td class="p-4 text-center text-gray-600 font-medium">
                                             {{ $i + $kelas->firstItem() }}
                                         </td>
@@ -260,17 +418,19 @@
                                         </td>
                                         <td class="p-4">
                                             <div class="flex justify-center space-x-2">
-                                                <a href="{{ route('kelas.edit', $k->id) }}"
-                                                   class="btn-warning action-btn inline-flex items-center">
+                                                <button
+                                                    class="btn-warning action-btn inline-flex items-center edit-btn"
+                                                    data-id="{{ $k->id }}"
+                                                    data-nama="{{ $k->nama_kelas }}"
+                                                    data-tingkat="{{ $k->tingkat }}">
                                                     <i class="fas fa-edit mr-1"></i>
                                                     Edit
-                                                </a>
+                                                </button>
                                                 <form action="{{ route('kelas.destroy', $k->id) }}" method="POST" class="inline">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit"
-                                                            class="btn-danger action-btn inline-flex items-center"
-                                                            onclick="return confirm('Yakin ingin menghapus kelas {{ $k->nama_kelas }}?')">
+                                                            class="btn-danger action-btn inline-flex items-center delete-btn">
                                                         <i class="fas fa-trash mr-1"></i>
                                                         Hapus
                                                     </button>
@@ -287,11 +447,11 @@
                                                 </div>
                                                 <h3 class="text-lg font-semibold text-gray-600 mb-2">Belum ada data kelas</h3>
                                                 <p class="text-gray-500 text-sm mb-4">Mulai dengan menambahkan kelas pertama</p>
-                                                <a href="{{ route('kelas.create') }}"
-                                                   class="btn-primary inline-flex items-center px-4 py-2 rounded-lg text-white font-semibold">
+                                                <button id="openCreateModalEmpty"
+                                                        class="btn-primary inline-flex items-center px-4 py-2 rounded-lg text-white font-semibold">
                                                     <i class="fas fa-plus mr-2"></i>
                                                     Tambah Kelas Pertama
-                                                </a>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -304,7 +464,7 @@
                     @if($kelas->hasPages())
                         <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                             <div class="text-sm text-gray-600">
-                                Menampilkan {{ $kelas->firstItem() }} - {{ $kelas->lastItem() }} dari {{ $kelas->total() }} kelas
+                                Menampilkan <span id="showingCount">{{ $kelas->firstItem() }} - {{ $kelas->lastItem() }}</span> dari <span id="totalCount">{{ $kelas->total() }}</span> kelas
                             </div>
                             <div class="flex space-x-2">
                                 @if($kelas->onFirstPage())
@@ -343,7 +503,7 @@
                         <div class="mt-4 flex justify-between items-center text-sm text-gray-500">
                             <div class="flex items-center">
                                 <i class="fas fa-info-circle mr-2 text-green-500"></i>
-                                <span>Menampilkan {{ $kelas->count() }} data kelas</span>
+                                <span>Menampilkan <span id="displayCount">{{ $kelas->count() }}</span> data kelas</span>
                             </div>
                             <div class="flex items-center space-x-4">
                                 <button class="flex items-center text-gray-500 hover:text-green-600 transition-colors">
@@ -362,11 +522,252 @@
         </div>
     </div>
 
-    <script>
-        // Konfirmasi hapus dengan sweet alert sederhana
-        document.addEventListener('DOMContentLoaded', function() {
-            const deleteButtons = document.querySelectorAll('form button[type="submit"]');
+    <!-- Modal Tambah Kelas -->
+    <div id="createModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-lg font-semibold text-gray-800">Tambah Kelas Baru</h3>
+                <button class="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="createForm" action="{{ route('kelas.store') }}" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="nama_kelas" class="form-label">Nama Kelas</label>
+                        <input type="text" id="nama_kelas" name="nama_kelas" class="form-input" placeholder="Masukkan nama kelas" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tingkat" class="form-label">Tingkat</label>
+                        <select id="tingkat" name="tingkat" class="form-select" required>
+                            <option value="">Pilih Tingkat</option>
+                            <option value="X">X</option>
+                            <option value="XI">XI</option>
+                            <option value="XII">XII</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary inline-flex items-center px-4 py-2 rounded-lg text-white font-semibold close-modal">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn-primary inline-flex items-center px-4 py-2 rounded-lg text-white font-semibold">
+                        <i class="fas fa-save mr-2"></i>
+                        Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
+    <!-- Modal Edit Kelas -->
+    <div id="editModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-lg font-semibold text-gray-800">Edit Data Kelas</h3>
+                <button class="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="editForm" action="" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="edit_nama_kelas" class="form-label">Nama Kelas</label>
+                        <input type="text" id="edit_nama_kelas" name="nama_kelas" class="form-input" placeholder="Masukkan nama kelas" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_tingkat" class="form-label">Tingkat</label>
+                        <select id="edit_tingkat" name="tingkat" class="form-select" required>
+                            <option value="">Pilih Tingkat</option>
+                            <option value="X">X</option>
+                            <option value="XI">XI</option>
+                            <option value="XII">XII</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary inline-flex items-center px-4 py-2 rounded-lg text-white font-semibold close-modal">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn-primary inline-flex items-center px-4 py-2 rounded-lg text-white font-semibold">
+                        <i class="fas fa-save mr-2"></i>
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Modal functionality
+            const createModal = document.getElementById('createModal');
+            const editModal = document.getElementById('editModal');
+            const openCreateModalBtn = document.getElementById('openCreateModal');
+            const openCreateModalEmptyBtn = document.getElementById('openCreateModalEmpty');
+            const closeModalBtns = document.querySelectorAll('.close-modal');
+            const editButtons = document.querySelectorAll('.edit-btn');
+            const deleteButtons = document.querySelectorAll('.delete-btn');
+            const editForm = document.getElementById('editForm');
+
+            // Filter functionality - PERBAIKAN DI SINI
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const resetFilterBtn = document.getElementById('resetFilter');
+            const filterStatus = document.getElementById('filterStatus');
+            const kelasTableBody = document.getElementById('kelasTableBody');
+            const tableRows = document.querySelectorAll('.kelas-data'); // PERBAIKAN: gunakan class yang konsisten
+            const displayCount = document.getElementById('displayCount');
+            const showingCount = document.getElementById('showingCount');
+            const totalCount = document.getElementById('totalCount');
+            const totalKelas = document.getElementById('totalKelas');
+
+            let currentFilter = 'all';
+
+            // Open create modal
+            function openCreateModal() {
+                createModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            // Open edit modal
+            function openEditModal(id, nama, tingkat) {
+                editForm.action = `{{ route('kelas.update', '') }}/${id}`;
+                document.getElementById('edit_nama_kelas').value = nama;
+                document.getElementById('edit_tingkat').value = tingkat;
+                editModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            // Close modal
+            function closeModal() {
+                createModal.classList.remove('active');
+                editModal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+
+            // Filter table by tingkat - PERBAIKAN UTAMA
+            function filterTable(tingkat) {
+                currentFilter = tingkat;
+
+                let visibleCount = 0;
+                let currentNumber = 1;
+
+                tableRows.forEach((row) => {
+                    const rowTingkat = row.getAttribute('data-tingkat');
+
+                    if (tingkat === 'all' || rowTingkat === tingkat) {
+                        row.classList.remove('hidden-row');
+                        visibleCount++;
+
+                        // Update nomor urut
+                        const firstCell = row.cells[0];
+                        firstCell.textContent = currentNumber;
+                        currentNumber++;
+                    } else {
+                        row.classList.add('hidden-row');
+                    }
+                });
+
+                // Update counts
+                updateCounts(visibleCount);
+
+                // Update filter status
+                updateFilterStatus(tingkat, visibleCount);
+
+                // Enable/disable reset button
+                resetFilterBtn.disabled = tingkat === 'all';
+                resetFilterBtn.classList.toggle('opacity-50', tingkat === 'all');
+                resetFilterBtn.classList.toggle('cursor-not-allowed', tingkat === 'all');
+
+                // Update filter buttons appearance
+                updateFilterButtons(tingkat);
+            }
+
+            // Update filter buttons appearance
+            function updateFilterButtons(activeTingkat) {
+                filterBtns.forEach(btn => {
+                    const tingkat = btn.getAttribute('data-tingkat');
+                    if (tingkat === activeTingkat) {
+                        btn.classList.add('filter-active', 'text-white');
+                        btn.classList.remove('border-gray-300', 'bg-white');
+                    } else {
+                        btn.classList.remove('filter-active', 'text-white');
+                        btn.classList.add('border-gray-300', 'bg-white');
+                    }
+                });
+            }
+
+            // Update filter status text
+            function updateFilterStatus(tingkat, count) {
+                let statusText = '';
+                switch(tingkat) {
+                    case 'all':
+                        statusText = `Menampilkan semua tingkat (${count} data)`;
+                        break;
+                    case 'X':
+                        statusText = `Menampilkan tingkat X (${count} data)`;
+                        break;
+                    case 'XI':
+                        statusText = `Menampilkan tingkat XI (${count} data)`;
+                        break;
+                    case 'XII':
+                        statusText = `Menampilkan tingkat XII (${count} data)`;
+                        break;
+                }
+                filterStatus.textContent = statusText;
+            }
+
+            // Update display counts
+            function updateCounts(visibleCount) {
+                displayCount.textContent = visibleCount;
+
+                // Update showing count for pagination
+                if (visibleCount > 0) {
+                    showingCount.textContent = `1 - ${visibleCount}`;
+                } else {
+                    showingCount.textContent = '0 - 0';
+                }
+            }
+
+            // Event listeners for modals
+            openCreateModalBtn.addEventListener('click', openCreateModal);
+
+            if (openCreateModalEmptyBtn) {
+                openCreateModalEmptyBtn.addEventListener('click', openCreateModal);
+            }
+
+            closeModalBtns.forEach(btn => {
+                btn.addEventListener('click', closeModal);
+            });
+
+            // Event listener untuk edit buttons menggunakan event delegation
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.edit-btn')) {
+                    const btn = e.target.closest('.edit-btn');
+                    const id = btn.getAttribute('data-id');
+                    const nama = btn.getAttribute('data-nama');
+                    const tingkat = btn.getAttribute('data-tingkat');
+                    openEditModal(id, nama, tingkat);
+                }
+            });
+
+            // Event listeners for filter buttons
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tingkat = this.getAttribute('data-tingkat');
+                    filterTable(tingkat);
+                });
+            });
+
+            // Event listener for reset filter
+            resetFilterBtn.addEventListener('click', function() {
+                filterTable('all');
+            });
+
+            // Event listeners for delete buttons
             deleteButtons.forEach(button => {
                 button.addEventListener('click', function(e) {
                     if (!confirm('Yakin ingin menghapus data ini?')) {
@@ -375,16 +776,29 @@
                 });
             });
 
-            // Animasi untuk rows
-            const tableRows = document.querySelectorAll('.table-row');
-            tableRows.forEach(row => {
-                row.addEventListener('mouseenter', function() {
-                    this.style.transform = 'scale(1.01)';
+            // Close modal when clicking outside
+            [createModal, editModal].forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeModal();
+                    }
                 });
+            });
 
-                row.addEventListener('mouseleave', function() {
-                    this.style.transform = 'scale(1)';
-                });
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeModal();
+                }
+            });
+
+            // Initialize filter
+            updateFilterButtons('all');
+
+            // Debug info
+            console.log('Total rows found:', tableRows.length);
+            tableRows.forEach(row => {
+                console.log('Row data-tingkat:', row.getAttribute('data-tingkat'));
             });
         });
     </script>
