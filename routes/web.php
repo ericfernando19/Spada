@@ -80,6 +80,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
 // 🔹 Dashboard Guru
 Route::middleware(['auth', 'role:guru'])->prefix('guru')->group(function () {
     Route::get('/dashboard', [GuruDashboard::class, 'index'])->name('guru.dashboard');
+    // 🔹 Halaman Kelola Mata Pelajaran
+    Route::get('/mata-pelajaran', [App\Http\Controllers\Guru\MataPelajaranController::class, 'index'])->name('guru.mata-pelajaran');
+    Route::post('/mata-pelajaran', [App\Http\Controllers\Guru\MataPelajaranController::class, 'store'])->name('guru.mata-pelajaran.store');
+    Route::put('/mata-pelajaran/{id}', [App\Http\Controllers\Guru\MataPelajaranController::class, 'update'])->name('guru.mata-pelajaran.update');
+    Route::delete('/mata-pelajaran/{id}', [App\Http\Controllers\Guru\MataPelajaranController::class, 'destroy'])->name('guru.mata-pelajaran.destroy');
 });
 
 // 🔹 Dashboard Siswa
