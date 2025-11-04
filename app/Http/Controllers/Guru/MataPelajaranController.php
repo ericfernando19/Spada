@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Guru;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Course;
+use App\Models\Materi;
 
 class MataPelajaranController extends Controller
 {
@@ -24,7 +25,6 @@ class MataPelajaranController extends Controller
 
         $data = $request->only('nama', 'deskripsi');
 
-        // ✅ simpan gambar jika ada
         if ($request->hasFile('gambar')) {
             $path = $request->file('gambar')->store('mata_pelajaran', 'public');
             $data['gambar'] = $path;
@@ -46,7 +46,6 @@ class MataPelajaranController extends Controller
         $course = Course::findOrFail($id);
         $data = $request->only('nama', 'deskripsi');
 
-        // ✅ perbarui gambar jika diunggah ulang
         if ($request->hasFile('gambar')) {
             $path = $request->file('gambar')->store('mata_pelajaran', 'public');
             $data['gambar'] = $path;
@@ -64,4 +63,14 @@ class MataPelajaranController extends Controller
 
         return redirect()->back()->with('success', 'Mata pelajaran berhasil dihapus!');
     }
+
+    public function isi($id)
+    {
+        $course = Course::findOrFail($id);
+
+        // sementara biar gak error, bikin koleksi kosong
+        $materi = Materi::where('course_id', $id)->latest()->get();
+        return view('guru.matapelajaran.isi', compact('course', 'materi'));
+    }
+
 }

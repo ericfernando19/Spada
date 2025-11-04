@@ -79,16 +79,9 @@
         @forelse($courses as $course)
             <div class="col-md-4 col-sm-6">
                 <div class="course-card">
-                    <!-- Gambar -->
-                    @if($course->gambar)
-                        <img src="{{ asset('storage/' . $course->gambar) }}" class="course-image" alt="{{ $course->nama }}">
-                    @else
-                        <img src="https://via.placeholder.com/400x150?text=Tidak+Ada+Gambar" class="course-image" alt="default">
-                    @endif
-
-                    <!-- Dropdown -->
+                    <!-- Dropdown (Pindah ke luar link) -->
                     <div class="dropdown position-absolute top-0 end-0 p-2">
-                        <button class="btn btn-sm btn-light border-0" data-bs-toggle="dropdown">
+                        <button class="btn btn-sm btn-light border-0 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-three-dots-vertical"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm">
@@ -105,14 +98,24 @@
                         </ul>
                     </div>
 
-                    <div class="course-content">
-                        <h5 class="course-title">{{ $course->nama }}</h5>
-                        <p class="course-desc">{{ $course->deskripsi ?? 'Tidak ada deskripsi.' }}</p>
-                        <div class="progress mt-2" style="height: 6px;">
-                            <div class="progress-bar bg-primary" style="width: 100%"></div>
+                    <!-- Link ke halaman isi -->
+                    <a href="{{ route('guru.mata-pelajaran.isi', $course->id) }}" class="text-decoration-none text-dark d-block">
+                        <!-- Gambar -->
+                        @if($course->gambar)
+                            <img src="{{ asset('storage/' . $course->gambar) }}" class="course-image" alt="{{ $course->nama }}">
+                        @else
+                            <img src="https://via.placeholder.com/400x150?text=Tidak+Ada+Gambar" class="course-image" alt="default">
+                        @endif
+
+                        <div class="course-content">
+                            <h5 class="course-title">{{ $course->nama }}</h5>
+                            <p class="course-desc">{{ $course->deskripsi ?? 'Tidak ada deskripsi.' }}</p>
+                            <div class="progress mt-2" style="height: 6px;">
+                                <div class="progress-bar bg-primary" style="width: 100%"></div>
+                            </div>
+                            <small class="text-muted">100% complete</small>
                         </div>
-                        <small class="text-muted">100% complete</small>
-                    </div>
+                    </a>
                 </div>
             </div>
 
@@ -194,5 +197,11 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Cegah klik dropdown membuka link <a>
+    document.querySelectorAll('.dropdown').forEach(dropdown => {
+        dropdown.addEventListener('click', e => e.stopPropagation());
+    });
+</script>
 </body>
 </html>

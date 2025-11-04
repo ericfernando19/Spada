@@ -11,6 +11,9 @@ use App\Http\Controllers\Admin\MataPelajaranController;
 use App\Http\Controllers\Admin\KelasController;
 use App\Http\Controllers\Admin\ImportController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Guru\MateriController;
+use App\Http\Controllers\Guru\SubmateriController;
+use App\Http\Controllers\Guru\TugasController;
 use Illuminate\Support\Facades\Auth;
 
 // ==========================
@@ -85,6 +88,18 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->group(function () {
     Route::post('/mata-pelajaran', [App\Http\Controllers\Guru\MataPelajaranController::class, 'store'])->name('guru.mata-pelajaran.store');
     Route::put('/mata-pelajaran/{id}', [App\Http\Controllers\Guru\MataPelajaranController::class, 'update'])->name('guru.mata-pelajaran.update');
     Route::delete('/mata-pelajaran/{id}', [App\Http\Controllers\Guru\MataPelajaranController::class, 'destroy'])->name('guru.mata-pelajaran.destroy');
+    Route::get('/mata-pelajaran/{id}/isi', [App\Http\Controllers\Guru\MataPelajaranController::class, 'isi'])
+        ->name('guru.mata-pelajaran.isi');
+    // Materi Routes
+    Route::post('/materi/tambah/{course}', [MateriController::class, 'store'])->name('materi.tambah');
+    Route::put('/materi/update/{materi}', [MateriController::class, 'update'])->name('materi.update');
+    Route::delete('/materi/hapus/{materi}', [MateriController::class, 'destroy'])->name('materi.hapus');
+    Route::post('/materi/{materiId}/submateri/store', [SubMateriController::class, 'store'])->name('submateri.store');
+    Route::put('/submateri/{id}/update', [SubMateriController::class, 'update'])->name('submateri.update');
+    Route::delete('/submateri/{id}/delete', [SubMateriController::class, 'destroy'])->name('submateri.destroy');
+    Route::post('/submateri/{id}/tugas', [TugasController::class, 'store'])->name('tugas.store');
+    Route::put('/tugas/{id}', [TugasController::class, 'update'])->name('tugas.update');
+    Route::delete('/tugas/{id}', [TugasController::class, 'destroy'])->name('tugas.destroy');
 });
 
 // 🔹 Dashboard Siswa

@@ -28,18 +28,21 @@
             display: flex;
             justify-content: space-around;
             margin-top: 30px;
+            flex-wrap: wrap;
         }
         .card {
             background: #e8f5e9;
             border-radius: 10px;
             padding: 20px;
-            width: 30%;
+            width: 45%;
             box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-bottom: 15px;
         }
         .card h2 {
             margin: 0;
             color: #1b5e20;
-            font-size: 2em;
+            font-size: 2.5em;
         }
         .card p {
             margin-top: 5px;
@@ -72,6 +75,8 @@
             text-decoration: none;
             border-radius: 6px;
             transition: background 0.2s ease;
+            border: none;
+            cursor: pointer;
         }
         .logout-btn:hover {
             background: #c0392b;
@@ -81,23 +86,23 @@
 <body>
 
     <div class="container">
-        <h1>Selamat Datang, Pak/Bu {{ $user->nama }}</h1>
-        <p>Role: {{ $user->role }}</p>
+        <h1>Selamat Datang, {{ $user->nama }}</h1>
+        <p>Role: {{ ucfirst($user->role) }}</p>
 
         <div class="summary">
             <div class="card">
                 <h2>{{ $jumlahPelajaran ?? 0 }}</h2>
-                <p>Pelajaran yang Diajar</p>
+                <p>Jumlah Mata Pelajaran yang Anda Ajar</p>
             </div>
             <div class="card">
                 <h2>{{ $jumlahSiswa ?? 0 }}</h2>
-                <p>Jumlah Siswa</p>
+                <p>Jumlah Siswa (Coming Soon)</p>
             </div>
         </div>
 
         <!-- Menu Mata Pelajaran -->
         <div class="menu">
-           <a href="{{ route('guru.mata-pelajaran') }}">📘 Kelola Mata Pelajaran</a>
+            <a href="{{ route('guru.mata-pelajaran') }}">📘 Kelola Mata Pelajaran</a>
         </div>
 
         <form action="{{ route('logout') }}" method="POST">
