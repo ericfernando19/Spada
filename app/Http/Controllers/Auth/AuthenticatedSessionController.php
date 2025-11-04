@@ -13,8 +13,20 @@ class AuthenticatedSessionController extends Controller
     /**
      * Tampilkan halaman login.
      */
-    public function create(): View
+    public function create(): View|RedirectResponse
     {
+        // 🔹 Jika sudah login, arahkan langsung ke dashboard sesuai role
+        if (Auth::check()) {
+            $user = Auth::user();
+            return match ($user->role) {
+                'admin' => redirect()->route('admin.dashboard'),
+                'guru' => redirect()->route('guru.dashboard'),
+                'siswa' => redirect()->route('siswa.dashboard'),
+                default => redirect()->route('login')->with('error', 'Role tidak dikenali!'),
+            };
+        }
+
+        // 🔹 Jika belum login, tampilkan form login
         return view('auth.login');
     }
 
@@ -28,21 +40,13 @@ class AuthenticatedSessionController extends Controller
             'password' => 'required|string',
         ]);
 
-        $username = $request->input('username');
-        $password = $request->input('password');
-
-        // Coba login berdasarkan username (bisa email, NIP, atau NISN)
-        $credentials = [
-            'username' => $username,
-            'password' => $password,
-        ];
+        $credentials = $request->only('username', 'password');
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-
             $user = Auth::user();
 
-            // Arahkan sesuai role user di database
+            // Arahkan sesuai role
             return match ($user->role) {
                 'admin' => redirect()->route('admin.dashboard'),
                 'guru' => redirect()->route('guru.dashboard'),
