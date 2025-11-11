@@ -26,11 +26,21 @@
         .mapel-input { text-align: center; margin-top: 15px; }
         .mapel-input input { width: 50%; padding: 8px; border-radius: 6px; border: 1px solid #ccc; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .btn-kembali {display: inline-flex;align-items: center;gap: 12px;padding: 6px 20px 6px 6px;background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);color: white;text-decoration: none;border-radius: 50px;font-weight: 600;transition: all 0.3s ease;box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);font-size: 0.9em;}
+        .btn-kembali .icon-circle { width: 35px; height: 35px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1em; transition: all 0.3s ease; }
+        .btn-kembali:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46, 125, 50, 0.5);}
+        .btn-kembali:hover .icon-circle {background: rgba(255, 255, 255, 0.3);transform: rotate(-360deg);}
     </style>
 </head>
 <body>
     <div class="container">
         <div class="top-bar">
+            <div class="left-buttons">
+                <a href="{{ url()->previous() }}" class="btn-kembali">
+                    <span class="icon-circle">⬅</span>
+                    <span>Kembali</span>
+                </a>
+            </div>
             <h1>📋 Absensi Kelas</h1>
             <a href="{{ route('guru.absensi.rekap') }}" class="btn-rekap">📊 Lihat Rekap</a>
         </div>
