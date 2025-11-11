@@ -4,9 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $course->nama }}</title>
+
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body class="p-4 bg-light">
@@ -22,7 +29,15 @@
     </div>
 
     @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: '{{ session('success') }}',
+                showConfirmButton: false,
+                timer: 2000
+            });
+        </script>
     @endif
 
     @foreach($materi->sortBy('id') as $m)
@@ -43,11 +58,9 @@
                             </button>
                         </li>
                         <li>
-                            <form action="{{ route('materi.hapus', $m->id) }}" method="POST" onsubmit="return confirm('Hapus materi ini?')">
-                                @csrf
-                                @method('DELETE')
-                                <button class="dropdown-item text-danger">🗑️ Hapus Materi</button>
-                            </form>
+                            <button class="dropdown-item text-danger" onclick="hapusMateri('{{ route('materi.hapus', $m->id) }}')">
+                                🗑️ Hapus Materi
+                            </button>
                         </li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
@@ -62,7 +75,7 @@
             {{-- Modal Edit Materi --}}
             <div class="modal fade" id="editMateriModal{{ $m->id }}" tabindex="-1">
                 <div class="modal-dialog">
-                    <form action="{{ route('materi.update', $m->id) }}" method="POST" class="modal-content">
+                    <form action="{{ route('materi.update', $m->id) }}" method="POST" class="modal-content" onsubmit="return showLoading(event)">
                         @csrf
                         @method('PUT')
                         <div class="modal-header">
@@ -134,11 +147,9 @@
                                             </button>
                                         </li>
                                         <li>
-                                            <form action="{{ route('submateri.destroy', $sub->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus submateri ini?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button class="dropdown-item text-danger">🗑️ Hapus Submateri</button>
-                                            </form>
+                                            <button class="dropdown-item text-danger" onclick="hapusSubMateri('{{ route('submateri.destroy', $sub->id) }}')">
+                                                🗑️ Hapus Submateri
+                                            </button>
                                         </li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
@@ -153,7 +164,7 @@
                             {{-- Modal Edit Submateri --}}
                             <div class="modal fade" id="editSubMateriModal{{ $sub->id }}" tabindex="-1">
                                 <div class="modal-dialog">
-                                    <form action="{{ route('submateri.update', $sub->id) }}" method="POST" enctype="multipart/form-data" class="modal-content">
+                                    <form action="{{ route('submateri.update', $sub->id) }}" method="POST" enctype="multipart/form-data" class="modal-content" onsubmit="return showLoading(event)">
                                         @csrf
                                         @method('PUT')
                                         <div class="modal-header">
@@ -188,7 +199,7 @@
                             {{-- Modal Tambah Tugas --}}
                             <div class="modal fade" id="tambahTugasModal{{ $sub->id }}" tabindex="-1">
                                 <div class="modal-dialog">
-                                    <form action="{{ route('tugas.store', $sub->id) }}" method="POST" enctype="multipart/form-data" class="modal-content">
+                                    <form action="{{ route('tugas.store', $sub->id) }}" method="POST" enctype="multipart/form-data" class="modal-content" onsubmit="return showLoading(event)">
                                         @csrf
                                         <div class="modal-header">
                                             <h5 class="modal-title">Tambah Tugas</h5>
@@ -230,28 +241,37 @@
                                     @endphp
                                     <div class="border p-3 mb-3 rounded bg-light">
                                         <div class="d-flex justify-content-between">
-                                            <div>
+                                            <div class="w-100 me-3">
                                                 <strong>{{ $t->judul }}</strong>
                                                 <p class="mb-1">{{ $t->deskripsi }}</p>
 
+                                                {{-- 🔹 Preview File jika ada --}}
                                                 @if($t->file)
-                                                    <p>📎 <a href="{{ asset('storage/' . $t->file) }}" target="_blank">Lihat File</a></p>
                                                     @php
                                                         $ext = pathinfo($t->file, PATHINFO_EXTENSION);
                                                     @endphp
-                                                    @if(in_array($ext, ['jpg','jpeg','png','gif']))
-                                                        <img src="{{ asset('storage/' . $t->file) }}" class="img-fluid rounded mb-2" style="max-height:200px;">
-                                                    @elseif($ext === 'pdf')
-                                                        <iframe src="{{ asset('storage/' . $t->file) }}" class="w-100 rounded" style="height:300px;"></iframe>
-                                                    @elseif(in_array($ext, ['mp4','webm']))
-                                                        <video controls class="w-100 rounded mb-2">
-                                                            <source src="{{ asset('storage/' . $t->file) }}" type="video/{{ $ext }}">
-                                                        </video>
-                                                    @endif
+                                                    <div class="mt-2">
+                                                        @if(in_array($ext, ['jpg', 'jpeg', 'png', 'gif']))
+                                                            <img src="{{ asset('storage/' . $t->file) }}" class="img-fluid rounded" style="max-height:200px;">
+                                                        @elseif($ext === 'pdf')
+                                                            <iframe src="{{ asset('storage/' . $t->file) }}" class="w-100 rounded" style="height:300px;"></iframe>
+                                                        @elseif(in_array($ext, ['mp4', 'webm']))
+                                                            <video controls class="w-100 rounded">
+                                                                <source src="{{ asset('storage/' . $t->file) }}" type="video/{{ $ext }}">
+                                                            </video>
+                                                        @else
+                                                            <a href="{{ asset('storage/' . $t->file) }}" target="_blank">📎 Lihat File</a>
+                                                        @endif
+                                                    </div>
                                                 @endif
 
+                                                {{-- 🔹 Deadline --}}
                                                 @if($t->deadline)
-                                                    <p class="small {{ $isOverdue ? 'text-danger' : 'text-success' }}">
+                                                    @php
+                                                        $deadline = \Carbon\Carbon::parse($t->deadline);
+                                                        $isOverdue = now()->gt($deadline);
+                                                    @endphp
+                                                    <p class="small mt-2 {{ $isOverdue ? 'text-danger' : 'text-success' }}">
                                                         <i class="bi {{ $isOverdue ? 'bi-exclamation-circle' : 'bi-clock' }}"></i>
                                                         Deadline: {{ $deadline->format('d M Y') }}
                                                         @if($isOverdue)
@@ -263,19 +283,16 @@
 
                                             <div class="d-flex flex-column align-items-end">
                                                 <button class="btn btn-sm btn-warning mb-1" data-bs-toggle="modal" data-bs-target="#editTugasModal{{ $t->id }}">Edit</button>
-                                                <form action="{{ route('tugas.destroy', $t->id) }}" method="POST" onsubmit="return confirm('Hapus tugas ini?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button class="btn btn-sm btn-danger">Hapus</button>
-                                                </form>
+                                                <button class="btn btn-sm btn-danger" onclick="hapusTugas('{{ route('tugas.destroy', $t->id) }}')">Hapus</button>
                                             </div>
                                         </div>
                                     </div>
 
+
                                     {{-- Modal Edit Tugas --}}
                                     <div class="modal fade" id="editTugasModal{{ $t->id }}" tabindex="-1">
                                         <div class="modal-dialog">
-                                            <form action="{{ route('tugas.update', $t->id) }}" method="POST" enctype="multipart/form-data" class="modal-content">
+                                            <form action="{{ route('tugas.update', $t->id) }}" method="POST" enctype="multipart/form-data" class="modal-content" onsubmit="return showLoading(event)">
                                                 @csrf
                                                 @method('PUT')
                                                 <div class="modal-header">
@@ -325,7 +342,7 @@
         {{-- Modal Tambah Submateri --}}
         <div class="modal fade" id="tambahSubMateriModal{{ $m->id }}" tabindex="-1">
             <div class="modal-dialog">
-                <form action="{{ route('submateri.store', $m->id) }}" method="POST" enctype="multipart/form-data" class="modal-content">
+                <form action="{{ route('submateri.store', $m->id) }}" method="POST" enctype="multipart/form-data" class="modal-content" onsubmit="return showLoading(event)">
                     @csrf
                     <div class="modal-header">
                         <h5 class="modal-title">Tambah Submateri</h5>
@@ -358,7 +375,7 @@
 {{-- Modal Tambah Materi --}}
 <div class="modal fade" id="tambahMateriModal" tabindex="-1">
     <div class="modal-dialog">
-        <form action="{{ route('materi.tambah', $course->id) }}" method="POST" class="modal-content">
+        <form action="{{ route('materi.tambah', $course->id) }}" method="POST" class="modal-content" onsubmit="return showLoading(event)">
             @csrf
             <div class="modal-header">
                 <h5 class="modal-title">Tambah Materi</h5>
@@ -381,6 +398,84 @@
         </form>
     </div>
 </div>
+
+<script>
+    function showLoading(e) {
+        e.preventDefault();
+        Swal.fire({
+            title: 'Memproses...',
+            text: 'Tunggu sebentar ya...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+        e.target.submit();
+    }
+
+    function hapusMateri(url) {
+        Swal.fire({
+            title: 'Hapus Materi?',
+            text: "Data materi dan submateri akan dihapus!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e3342f',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then(result => {
+            if (result.isConfirmed) {
+                const form = document.createElement('form');
+                form.action = url;
+                form.method = 'POST';
+                form.innerHTML = '@csrf @method("DELETE")';
+                document.body.append(form);
+                form.submit();
+            }
+        });
+    }
+
+    function hapusSubMateri(url) {
+        Swal.fire({
+            title: 'Hapus Submateri?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e3342f',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Hapus',
+            cancelButtonText: 'Batal'
+        }).then(r => {
+            if (r.isConfirmed) {
+                const f = document.createElement('form');
+                f.action = url;
+                f.method = 'POST';
+                f.innerHTML = '@csrf @method("DELETE")';
+                document.body.append(f);
+                f.submit();
+            }
+        });
+    }
+
+    function hapusTugas(url) {
+        Swal.fire({
+            title: 'Hapus Tugas?',
+            text: 'Tugas ini akan dihapus permanen.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e3342f',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then(res => {
+            if (res.isConfirmed) {
+                const form = document.createElement('form');
+                form.action = url;
+                form.method = 'POST';
+                form.innerHTML = '@csrf @method("DELETE")';
+                document.body.append(form);
+                form.submit();
+            }
+        });
+    }
+</script>
 
 </body>
 </html>

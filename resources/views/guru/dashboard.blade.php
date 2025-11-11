@@ -100,9 +100,10 @@
             </div>
         </div>
 
-        <!-- Menu Mata Pelajaran -->
+        <!-- Menu Navigasi -->
         <div class="menu">
             <a href="{{ route('guru.mata-pelajaran') }}">📘 Kelola Mata Pelajaran</a>
+            <a href="{{ route('guru.absensi.index') }}">📋 Absensi Kelas</a>
         </div>
 
         <form action="{{ route('logout') }}" method="POST">

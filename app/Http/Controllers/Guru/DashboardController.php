@@ -27,4 +27,5 @@ class DashboardController extends Controller
         $user = Auth::user();
         return view('guru.mata-pelajaran', compact('user'));
     }
+
 }

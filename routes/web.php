@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\MataPelajaranController;
 use App\Http\Controllers\Admin\KelasController;
 use App\Http\Controllers\Admin\ImportController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Guru\AbsensiController;
 use App\Http\Controllers\Guru\MateriController;
 use App\Http\Controllers\Guru\SubmateriController;
 use App\Http\Controllers\Guru\TugasController;
@@ -100,6 +101,16 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->group(function () {
     Route::post('/submateri/{id}/tugas', [TugasController::class, 'store'])->name('tugas.store');
     Route::put('/tugas/{id}', [TugasController::class, 'update'])->name('tugas.update');
     Route::delete('/tugas/{id}', [TugasController::class, 'destroy'])->name('tugas.destroy');
+    //absensi
+    Route::get('/absensi', [AbsensiController::class, 'index'])->name('guru.absensi.index');
+    Route::get('/absensi', [AbsensiController::class, 'index'])->name('guru.absensi.index');
+    Route::post('/absensi', [AbsensiController::class, 'store'])->name('guru.absensi.store');
+    Route::post('/absensi/simpan', [AbsensiController::class, 'store'])->name('guru.absensi.simpan');
+    Route::get('/absensi/rekap', [AbsensiController::class, 'rekap'])->name('guru.absensi.rekap');
+    Route::put('/guru/absensi/{id}', [AbsensiController::class, 'update'])->name('guru.absensi.update');
+    Route::delete('/guru/absensi/{id}', [AbsensiController::class, 'destroy'])->name('guru.absensi.destroy');
+
+
 });
 
 // 🔹 Dashboard Siswa
