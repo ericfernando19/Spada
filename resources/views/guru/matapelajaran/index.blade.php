@@ -62,8 +62,11 @@
 <div class="container">
     <h2 class="mb-4 text-success fw-bold text-center">📘 Kelola Mata Pelajaran</h2>
 
-    <!-- Tombol Tambah -->
-    <div class="text-center mb-4">
+    <!-- Tombol Tambah, Kembali -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <button class="btn btn-outline-success" onclick="window.history.back()">
+            <i class="bi bi-arrow-left"></i> Kembali
+        </button>
         <button class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#tambahModal">
             + Tambah Mata Pelajaran
         </button>
