@@ -19,5 +19,9 @@ class Materi extends Model
     {
         return $this->hasMany(Submateri::class);
     }
+    public function soals()
+    {
+        return $this->hasMany(Soal::class, 'materi_id');
+    }
 
 }
