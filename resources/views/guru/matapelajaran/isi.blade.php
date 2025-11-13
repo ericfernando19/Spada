@@ -6,18 +6,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $course->nama }}</title>
 
-    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
-    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body class="p-4 bg-light">
+
+    {{-- Script untuk notifikasi --}}
+    @if (session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: '{{ session('success') }}',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        </script>
+    @endif
+
     <div class="container">
         <h1 class="mb-3">{{ $course->nama }}</h1>
         <p>{{ $course->deskripsi }}</p>
@@ -29,472 +40,219 @@
             </button>
         </div>
 
-        @if (session('success'))
-            <script>
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: '{{ session('success') }}',
-                    showConfirmButton: false,
-                    timer: 2000
-                });
-            </script>
-        @endif
-
-        @foreach ($materi->sortBy('id') as $m)
-            <div class="card mb-3 shadow-sm">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <button class="btn btn-link text-decoration-none text-start w-100" data-bs-toggle="collapse"
-                        data-bs-target="#materi-{{ $m->id }}">
-                        <strong>{{ $m->judul }}</strong>
-                    </button>
-
-                    <div class="dropdown">
-                        <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-three-dots-vertical"></i>
+        <div class="accordion" id="materiAccordion">
+            @forelse ($materi as $item)
+                <div class="accordion-item mb-2 shadow-sm">
+                    <h2 class="accordion-header" id="heading{{ $item->id }}">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapse{{ $item->id }}" aria-expanded="false"
+                            aria-controls="collapse{{ $item->id }}">
+                            <strong>{{ $item->judul }}</strong>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <button class="dropdown-item" data-bs-toggle="modal"
-                                    data-bs-target="#editMateriModal{{ $m->id }}">
-                                    ✏️ Edit Materi
-                                </button>
-                            </li>
-                            <li>
-                                <button class="dropdown-item text-danger"
-                                    onclick="hapusMateri('{{ route('materi.hapus', $m->id) }}')">
-                                    🗑️ Hapus Materi
-                                </button>
-                            </li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li>
-                                <button class="dropdown-item" data-bs-toggle="modal"
-                                    data-bs-target="#tambahSubMateriModal{{ $m->id }}">
-                                    ➕ Tambah Submateri
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+                    </h2>
+                    <div id="collapse{{ $item->id }}" class="accordion-collapse collapse"
+                        aria-labelledby="heading{{ $item->id }}" data-bs-parent="#materiAccordion">
+                        <div class="accordion-body">
 
-                {{-- Modal Edit Materi --}}
-                <div class="modal fade" id="editMateriModal{{ $m->id }}" tabindex="-1">
-                    <div class="modal-dialog">
-                        <form action="{{ route('materi.update', $m->id) }}" method="POST" class="modal-content"
-                            onsubmit="return showLoading(event)">
-                            @csrf
-                            @method('PUT')
-                            <div class="modal-header">
-                                <h5 class="modal-title">Edit Materi</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <label>Judul Materi</label>
-                                    <input type="text" name="judul" class="form-control"
-                                        value="{{ $m->judul }}" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label>Konten</label>
-                                    <textarea name="konten" class="form-control" rows="3" required>{{ $m->konten }}</textarea>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                <button class="btn btn-success">Simpan Perubahan</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+                            {{-- =================================== --}}
+                            {{-- KODE PREVIEW FILE (DENGAN PDF EMBED) --}}
+                            {{-- =================================== --}}
+                            @if ($item->file)
+                                @php
+                                    $path = asset('storage/' . $item->file);
+                                    $extension = strtolower(pathinfo($item->file, PATHINFO_EXTENSION));
+                                @endphp
 
-                <div id="materi-{{ $m->id }}" class="collapse">
-                    <div class="card-body">
-                        @if (!empty($m->konten))
-                            <p class="text-secondary mb-3">{{ $m->konten }}</p>
-                            <hr>
-                        @endif
+                                <div class="mb-3 p-3 border rounded bg-light">
+                                    <p class="fw-bold">Lampiran File:</p>
 
-                        {{-- Daftar Submateri --}}
-                        @forelse($m->submateris as $sub)
-                            <div class="border rounded p-3 mb-3 bg-white">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h5>{{ $sub->judul }}</h5>
-                                        <p>{{ $sub->konten }}</p>
+                                    @if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif']))
+                                        {{-- Jika GAMBAR --}}
+                                        <img src="{{ $path }}" class="img-fluid rounded"
+                                            style="max-height: 400px; object-fit: contain;" alt="Preview Gambar">
 
-                                        {{-- File Preview --}}
-                                        @if ($sub->file)
-                                            @php
-                                                $ext = pathinfo($sub->file, PATHINFO_EXTENSION);
-                                            @endphp
-                                            <div class="mt-2">
-                                                @if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif']))
-                                                    <img src="{{ asset('storage/' . $sub->file) }}"
-                                                        class="img-fluid rounded" style="max-height:200px;">
-                                                @elseif($ext === 'pdf')
-                                                    <iframe src="{{ asset('storage/' . $sub->file) }}"
-                                                        class="w-100 rounded" style="height:300px;"></iframe>
-                                                @elseif(in_array($ext, ['mp4', 'webm']))
-                                                    <video controls class="w-100 rounded">
-                                                        <source src="{{ asset('storage/' . $sub->file) }}"
-                                                            type="video/{{ $ext }}">
-                                                    </video>
-                                                @else
-                                                    <a href="{{ asset('storage/' . $sub->file) }}" target="_blank">📎
-                                                        Lihat File</a>
-                                                @endif
-                                            </div>
-                                        @endif
-                                    </div>
+                                    @elseif (in_array($extension, ['mp4', 'webm', 'ogg']))
+                                        {{-- Jika VIDEO --}}
+                                        <video controls class="img-fluid rounded" style="max-width: 100%;">
+                                            <source src="{{ $path }}" type="video/{{ $extension }}">
+                                            Browser Anda tidak mendukung tag video.
+                                        </video>
 
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
-                                            <i class="bi bi-three-dots-vertical"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li>
-                                                <button class="dropdown-item" data-bs-toggle="modal"
-                                                    data-bs-target="#editSubMateriModal{{ $sub->id }}">
-                                                    ✏️ Edit Submateri
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <button class="dropdown-item text-danger"
-                                                    onclick="hapusSubMateri('{{ route('submateri.destroy', $sub->id) }}')">
-                                                    🗑️ Hapus Submateri
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <hr class="dropdown-divider">
-                                            </li>
-                                            <li>
-                                                <button class="dropdown-item" data-bs-toggle="modal"
-                                                    data-bs-target="#tambahTugasModal{{ $sub->id }}">
-                                                    📝 Tambah Tugas
-                                                </button>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
+                                    @elseif ($extension == 'pdf')
+                                        {{--
+                                          PERUBAHAN DI SINI:
+                                          Menggunakan <iframe> untuk embed PDF
+                                        --}}
+                                        <iframe src="{{ $path }}"
+                                                width="100%"
+                                                height="600px"
+                                                class="rounded border"
+                                                style="background: #eee;">
+                                            Browser Anda tidak mendukung iframe,
+                                            <a href="{{ $path }}" target="_blank">klik di sini untuk melihat PDF</a>.
+                                        </iframe>
 
-                                {{-- Modal Edit Submateri --}}
-                                <div class="modal fade" id="editSubMateriModal{{ $sub->id }}" tabindex="-1">
-                                    <div class="modal-dialog">
-                                        <form action="{{ route('submateri.update', $sub->id) }}" method="POST"
-                                            enctype="multipart/form-data" class="modal-content"
-                                            onsubmit="return showLoading(event)">
-                                            @csrf
-                                            @method('PUT')
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Edit Submateri</h5>
-                                                <button type="button" class="btn-close"
-                                                    data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <div class="mb-3">
-                                                    <label>Judul Submateri</label>
-                                                    <input type="text" name="judul" value="{{ $sub->judul }}"
-                                                        class="form-control" required>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label>Konten</label>
-                                                    <textarea name="konten" class="form-control" rows="3" required>{{ $sub->konten }}</textarea>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label>File (opsional)</label>
-                                                    <input type="file" name="file" class="form-control">
-                                                    @if ($sub->file)
-                                                        <small class="text-muted">File saat ini:
-                                                            {{ basename($sub->file) }}</small>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button class="btn btn-secondary"
-                                                    data-bs-dismiss="modal">Batal</button>
-                                                <button class="btn btn-success">Simpan</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-
-                                {{-- Modal Tambah Tugas --}}
-                                <div class="modal fade" id="tambahTugasModal{{ $sub->id }}" tabindex="-1">
-                                    <div class="modal-dialog">
-                                        <form action="{{ route('tugas.store', $sub->id) }}" method="POST"
-                                            enctype="multipart/form-data" class="modal-content"
-                                            onsubmit="return showLoading(event)">
-                                            @csrf
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Tambah Tugas</h5>
-                                                <button type="button" class="btn-close"
-                                                    data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <div class="mb-3">
-                                                    <label>Judul Tugas</label>
-                                                    <input type="text" name="judul" class="form-control"
-                                                        required>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label>Deskripsi</label>
-                                                    <textarea name="deskripsi" class="form-control" rows="3" required></textarea>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label>Deadline</label>
-                                                    <input type="date" name="deadline" class="form-control">
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label>File (opsional)</label>
-                                                    <input type="file" name="file" class="form-control">
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button class="btn btn-secondary"
-                                                    data-bs-dismiss="modal">Batal</button>
-                                                <button class="btn btn-primary">Simpan</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-
-                                {{-- Daftar Tugas --}}
-                                <div class="mt-3">
-                                    <h6>Daftar Tugas</h6>
-                                    @forelse($sub->tugas as $t)
-                                        @php
-                                            $deadline = \Carbon\Carbon::parse($t->deadline);
-                                            $isOverdue = now()->gt($deadline);
-                                        @endphp
-                                        <div class="border p-3 mb-3 rounded bg-light">
-                                            <div class="d-flex justify-content-between">
-                                                <div class="w-100 me-3">
-                                                    <strong>{{ $t->judul }}</strong>
-                                                    <p class="mb-1">{{ $t->deskripsi }}</p>
-
-                                                    {{-- 🔹 Preview File jika ada --}}
-                                                    @if ($t->file)
-                                                        @php
-                                                            $ext = pathinfo($t->file, PATHINFO_EXTENSION);
-                                                        @endphp
-                                                        <div class="mt-2">
-                                                            @if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif']))
-                                                                <img src="{{ asset('storage/' . $t->file) }}"
-                                                                    class="img-fluid rounded"
-                                                                    style="max-height:200px;">
-                                                            @elseif($ext === 'pdf')
-                                                                <iframe src="{{ asset('storage/' . $t->file) }}"
-                                                                    class="w-100 rounded"
-                                                                    style="height:300px;"></iframe>
-                                                            @elseif(in_array($ext, ['mp4', 'webm']))
-                                                                <video controls class="w-100 rounded">
-                                                                    <source src="{{ asset('storage/' . $t->file) }}"
-                                                                        type="video/{{ $ext }}">
-                                                                </video>
-                                                            @else
-                                                                <a href="{{ asset('storage/' . $t->file) }}"
-                                                                    target="_blank">📎 Lihat File</a>
-                                                            @endif
-                                                        </div>
-                                                    @endif
-
-                                                    {{-- 🔹 Deadline --}}
-                                                    @if ($t->deadline)
-                                                        @php
-                                                            $deadline = \Carbon\Carbon::parse($t->deadline);
-                                                            $isOverdue = now()->gt($deadline);
-                                                        @endphp
-                                                        <p
-                                                            class="small mt-2 {{ $isOverdue ? 'text-danger' : 'text-success' }}">
-                                                            <i
-                                                                class="bi {{ $isOverdue ? 'bi-exclamation-circle' : 'bi-clock' }}"></i>
-                                                            Deadline: {{ $deadline->format('d M Y') }}
-                                                            @if ($isOverdue)
-                                                                (Sudah Lewat)
-                                                            @endif
-                                                        </p>
-                                                    @endif
-                                                </div>
-
-                                                <div class="d-flex flex-column align-items-end">
-                                                    <button class="btn btn-sm btn-warning mb-1" data-bs-toggle="modal"
-                                                        data-bs-target="#editTugasModal{{ $t->id }}">Edit</button>
-                                                    <button class="btn btn-sm btn-danger"
-                                                        onclick="hapusTugas('{{ route('tugas.destroy', $t->id) }}')">Hapus</button>
-                                                </div>
-                                            </div>
-                                        </div>
-
-
-                                        {{-- Modal Edit Tugas --}}
-                                        <div class="modal fade" id="editTugasModal{{ $t->id }}"
-                                            tabindex="-1">
-                                            <div class="modal-dialog">
-                                                <form action="{{ route('tugas.update', $t->id) }}" method="POST"
-                                                    enctype="multipart/form-data" class="modal-content"
-                                                    onsubmit="return showLoading(event)">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">Edit Tugas</h5>
-                                                        <button type="button" class="btn-close"
-                                                            data-bs-dismiss="modal"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <div class="mb-3">
-                                                            <label>Judul</label>
-                                                            <input type="text" name="judul"
-                                                                value="{{ $t->judul }}" class="form-control"
-                                                                required>
-                                                        </div>
-                                                        <div class="mb-3">
-                                                            <label>Deskripsi</label>
-                                                            <textarea name="deskripsi" class="form-control" rows="3">{{ $t->deskripsi }}</textarea>
-                                                        </div>
-                                                        <div class="mb-3">
-                                                            <label>Deadline</label>
-                                                            <input type="date" name="deadline"
-                                                                value="{{ $t->deadline }}" class="form-control">
-                                                        </div>
-                                                        <div class="mb-3">
-                                                            <label>File (opsional)</label>
-                                                            <input type="file" name="file"
-                                                                class="form-control">
-                                                            @if ($t->file)
-                                                                <small class="text-muted">File saat ini:
-                                                                    {{ basename($t->file) }}</small>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button class="btn btn-secondary"
-                                                            data-bs-dismiss="modal">Batal</button>
-                                                        <button class="btn btn-success">Simpan</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    @empty
-                                        <p class="text-muted">Belum ada tugas.</p>
-                                    @endforelse
-                                    {{-- 🔹 Tombol Tambah Soal --}}
-                                    <div class="mt-3 text-end">
-                                        <a href="{{ route('guru.soal.create', ['materi_id' => $m->id]) }}"
-                                            class="btn btn-outline-primary">
-                                            ➕ Tambah Soal untuk Materi Ini
+                                    @else
+                                        {{-- File Tipe Lain (docx, zip, dll) --}}
+                                        <a href="{{ $path }}" target="_blank" class="btn btn-secondary">
+                                            <i class="bi bi-download"></i> Download File ({{ $extension }})
                                         </a>
-                                    </div>
-
+                                    @endif
                                 </div>
+                                <hr>
+                            @endif
+                            {{-- AKHIR KODE PREVIEW --}}
+
+
+                            <p><strong>Deskripsi/Konten:</strong></p>
+                            <div>{!! $item->konten !!}</div>
+
+                            <hr class="my-3">
+
+                            {{-- Tombol Aksi --}}
+                            <div class="d-flex flex-wrap gap-2 mt-3">
+                                <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                                    data-bs-target="#editMateriModal{{ $item->id }}">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </button>
+
+                                <button class="btn btn-danger btn-sm"
+                                    onclick="hapusMateri('{{ route('materi.hapus', $item->id) }}')">
+                                    <i class="bi bi-trash"></i> Hapus
+                                </button>
+
+                                <a href="{{ route('guru.soal.create', ['materi_id' => $item->id]) }}" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-plus-circle"></i> Tambah Soal
+                                </a>
+
+                                <button class="btn btn-success btn-sm" data-bs-toggle="modal"
+                                    data-bs-target="#tambahSubmateriModal{{ $item->id }}">
+                                    <i class="bi bi-journal-plus"></i> Tambah Sub Materi
+                                </button>
                             </div>
-                        @empty
-                            <p class="text-muted">Belum ada submateri.</p>
-                        @endforelse
+
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            {{-- Modal Tambah Submateri --}}
-            <div class="modal fade" id="tambahSubMateriModal{{ $m->id }}" tabindex="-1">
-                <div class="modal-dialog">
-                    <form action="{{ route('submateri.store', $m->id) }}" method="POST"
-                        enctype="multipart/form-data" class="modal-content" onsubmit="return showLoading(event)">
-                        @csrf
-                        <div class="modal-header">
-                            <h5 class="modal-title">Tambah Submateri</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label>Judul Submateri</label>
-                                <input type="text" name="judul" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label>Konten</label>
-                                <textarea name="konten" class="form-control" rows="3" required></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label>File (opsional)</label>
-                                <input type="file" name="file" class="form-control">
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button class="btn btn-primary">Simpan</button>
-                        </div>
-                    </form>
+            @empty
+                <div class="alert alert-secondary">
+                    Belum ada materi yang ditambahkan. Silakan klik tombol "+ Tambah Materi".
                 </div>
-            </div>
-        @endforeach
+            @endforelse
+        </div>
     </div>
 
-    {{-- Modal Tambah Materi --}}
+
+    {{--
+      ================================================
+      MODAL-MODAL (Sama seperti sebelumnya)
+      ================================================
+    --}}
+
     <div class="modal fade" id="tambahMateriModal" tabindex="-1">
         <div class="modal-dialog">
             <form action="{{ route('materi.tambah', $course->id) }}" method="POST" class="modal-content"
-                onsubmit="return showLoading(event)">
+                enctype="multipart/form-data">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title">Tambah Materi</h5>
+                    <h5 class="modal-title">Tambah Materi Baru</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label>Judul Materi</label>
+                        <label>Judul</label>
                         <input type="text" name="judul" class="form-control" required>
                     </div>
                     <div class="mb-3">
                         <label>Konten Materi</label>
-                        <textarea name="konten" class="form-control" rows="3" placeholder="Tuliskan isi materi..." required></textarea>
+                        <textarea name="konten" class="form-control" rows="5" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label>File (Gambar, Video, PDF) - Maks 10MB</label>
+                        <input type="file" name="file" class="form-control">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button class="btn btn-primary">Simpan</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <script>
-        function showLoading(e) {
-            e.preventDefault();
-            Swal.fire({
-                title: 'Memproses...',
-                text: 'Tunggu sebentar ya...',
-                allowOutsideClick: false,
-                didOpen: () => Swal.showLoading()
-            });
-            e.target.submit();
-        }
 
+    {{-- Modal Edit Materi & Tambah Submateri (Loop) --}}
+    @foreach ($materi as $item)
+        <div class="modal fade" id="editMateriModal{{ $item->id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <form action="{{ route('materi.update', $item->id) }}" method="POST" class="modal-content"
+                    enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Materi: {{ $item->judul }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label>Judul</label>
+                            <input type="text" name="judul" class="form-control" value="{{ $item->judul }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>Konten Materi</label>
+                            <textarea name="konten" class="form-control" rows="5" required>{{ $item->konten }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label>Ganti File (Opsional) - Maks 10MB</label>
+                            @if ($item->file)
+                                <p class="text-muted small">File saat ini: {{ $item->file }}</p>
+                            @endif
+                            <input type="file" name="file" class="form-control">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-warning">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="modal fade" id="tambahSubmateriModal{{ $item->id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <form action="{{ route('submateri.store', $item->id) }}" method="POST" class="modal-content">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title">Tambah Sub Materi (di bawah {{ $item->judul }})</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label>Judul Sub Materi</label>
+                            <input type="text" name="judul" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>Deskripsi</label>
+                            <textarea name="deskripsi" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-success">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endforeach
+    {{-- Akhir Loop Modal --}}
+
+
+    {{-- SCRIPT HAPUS --}}
+    <script>
         function hapusMateri(url) {
             Swal.fire({
                 title: 'Hapus Materi?',
-                text: "Data materi dan submateri akan dihapus!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#e3342f',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Ya, hapus!',
-                cancelButtonText: 'Batal'
-            }).then(result => {
-                if (result.isConfirmed) {
-                    const form = document.createElement('form');
-                    form.action = url;
-                    form.method = 'POST';
-                    form.innerHTML = '@csrf @method('DELETE')';
-                    document.body.append(form);
-                    form.submit();
-                }
-            });
-        }
-
-        function hapusSubMateri(url) {
-            Swal.fire({
-                title: 'Hapus Submateri?',
+                text: 'Semua submateri dan tugas di dalamnya juga akan terhapus!',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#e3342f',

@@ -31,7 +31,8 @@ class MateriController extends Controller
 
         $materi->save();
 
-        return redirect()->back()->with('success', 'Materi berhasil ditambahkan!');
+        return redirect()->route('guru.mata-pelajaran.isi', $courseId)
+                         ->with('success', 'Materi berhasil ditambahkan!');
     }
 
     public function update(Request $request, $id)

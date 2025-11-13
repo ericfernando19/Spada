@@ -150,7 +150,7 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->group(function () {
 
     // 🔹 Tambah Materi (form + simpan)
     Route::get('/materi/create/{course}', [MateriController::class, 'create'])->name('guru.materi.create');
-    Route::post('/materi/store', [MateriController::class, 'store'])->name('guru.materi.store');
+    Route::post('/materi/store/{courseId}', [MateriController::class, 'store'])->name('guru.materi.store');
 
 
 });

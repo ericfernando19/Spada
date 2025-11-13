@@ -8,9 +8,18 @@
     <div class="py-8">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-sm rounded-lg p-6">
-                <form method="POST" action="{{ route('guru.materi.store') }}" enctype="multipart/form-data">
+                <form method="POST" action="{{ route('guru.materi.store', $course->id) }}" enctype="multipart/form-data">
                     @csrf
-                    <input type="hidden" name="course_id" value="{{ $course->id }}">
+
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
 
                     <div class="mb-3">
                         <label class="form-label">Judul Materi</label>
