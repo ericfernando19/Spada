@@ -52,16 +52,27 @@
                                         <p class="text-muted small mb-2">{{ $course->deskripsi }}</p>
                                         <p class="text-sm text-secondary mb-3">Kelas: {{ $course->kelas->nama_kelas ?? '-' }}</p>
 
-                                        <div class="mt-auto d-flex justify-content-between">
+                                        <div class="mt-auto d-flex flex-column gap-2">
+                                            {{-- Tombol Kelola Materi & Soal --}}
+                                            <a href="{{ route('guru.mata-pelajaran.show', $course->id) }}"
+                                               class="btn btn-primary btn-sm">
+                                                Kelola Materi & Soal
+                                            </a>
+
+                                            {{-- Tombol Lihat / Isi Materi --}}
                                             <a href="{{ route('guru.mata-pelajaran.isi', $course->id) }}"
                                                class="btn btn-outline-primary btn-sm">
                                                 Lihat / Isi Materi
                                             </a>
+
+                                            {{-- Tombol Edit --}}
                                             <button class="btn btn-outline-warning btn-sm"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#editMapelModal{{ $course->id }}">
                                                 Edit
                                             </button>
+
+                                            {{-- Tombol Hapus --}}
                                             <form action="{{ route('guru.mata-pelajaran.destroy', $course->id) }}"
                                                   method="POST"
                                                   onsubmit="return confirm('Yakin ingin menghapus mata pelajaran ini?')">

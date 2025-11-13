@@ -26,6 +26,7 @@ use App\Http\Controllers\Guru\TugasController;
 use App\Http\Controllers\Guru\SiswaDiajarController;
 use App\Http\Controllers\Guru\AbsensiController;
 use App\Http\Controllers\Guru\SoalController;
+use App\Http\Controllers\Guru\MataPelajaranController as GuruMataPelajaran;
 
 // Siswa
 use App\Http\Controllers\Siswa\DashboardController as SiswaDashboard;
@@ -122,9 +123,12 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->group(function () {
     Route::post('/submateri/{id}/tugas', [TugasController::class, 'store'])->name('tugas.store');
     Route::put('/tugas/{id}', [TugasController::class, 'update'])->name('tugas.update');
     Route::delete('/tugas/{id}', [TugasController::class, 'destroy'])->name('tugas.destroy');
+    Route::get('/materi/{materi_id}/soal/create', [SoalController::class, 'create'])->name('guru.soal.create');
+
 
     // 🔹 Soal (per materi/pertemuan)
     Route::get('/materi/{materi_id}/soal', [SoalController::class, 'index'])->name('guru.soal.index');
+    Route::get('/materi/{materi_id}/soal/create', [SoalController::class, 'create'])->name('guru.soal.create');
     Route::post('/materi/{materi_id}/soal', [SoalController::class, 'store'])->name('guru.soal.store');
     Route::delete('/soal/{id}', [SoalController::class, 'destroy'])->name('guru.soal.destroy');
 
@@ -138,6 +142,17 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->group(function () {
 
     // 🔹 Daftar Siswa yang Diajar
     Route::get('/siswa-diajar', [SiswaDiajarController::class, 'index'])->name('guru.siswa-diajar.index');
+
+    // 🔹 Detail Mata Pelajaran
+    Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(function () {
+        Route::get('/mata-pelajaran/{id}', [GuruMataPelajaranController::class, 'show'])->name('mata-pelajaran.show');
+    });
+
+    // 🔹 Tambah Materi (form + simpan)
+    Route::get('/materi/create/{course}', [MateriController::class, 'create'])->name('guru.materi.create');
+    Route::post('/materi/store', [MateriController::class, 'store'])->name('guru.materi.store');
+
+
 });
 
 // =====================================

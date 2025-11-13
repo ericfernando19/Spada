@@ -9,6 +9,13 @@ use Illuminate\Http\Request;
 
 class SoalController extends Controller
 {
+
+    public function create($materi_id)
+    {
+        $materi = Materi::findOrFail($materi_id);
+        return view('guru.soal.create', compact('materi'));
+    }
+
     // Menampilkan daftar soal berdasarkan materi
     public function index($materi_id)
     {

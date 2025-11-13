@@ -59,10 +59,16 @@ class MateriController extends Controller
         return redirect()->back()->with('success', 'Materi berhasil diperbarui!');
     }
 
-
     public function destroy($id)
     {
         Materi::findOrFail($id)->delete();
         return back()->with('success', 'Materi berhasil dihapus!');
     }
+
+    public function create($courseId)
+    {
+        $course = \App\Models\Course::findOrFail($courseId);
+        return view('guru.materi.create', compact('course'));
+    }
+
 }

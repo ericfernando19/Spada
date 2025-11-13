@@ -87,4 +87,14 @@ class MataPelajaranController extends Controller
 
         return view('guru.matapelajaran.isi', compact('course', 'materi'));
     }
+
+    public function show($id)
+    {
+        $course = \App\Models\Course::findOrFail($id);
+        $materis = \App\Models\Materi::where('course_id', $id)->get();
+        $soals = \App\Models\Soal::whereIn('materi_id', $materis->pluck('id'))->get();
+
+        return view('guru.matapelajaran.show', compact('course', 'materis', 'soals'));
+    }
+
 }
