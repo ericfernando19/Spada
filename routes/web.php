@@ -15,6 +15,7 @@ use App\Http\Controllers\Guru\AbsensiController;
 use App\Http\Controllers\Guru\MateriController;
 use App\Http\Controllers\Guru\SubmateriController;
 use App\Http\Controllers\Guru\TugasController;
+use App\Http\Controllers\Guru\SiswaDiajarController;
 use Illuminate\Support\Facades\Auth;
 
 // ==========================
@@ -109,8 +110,8 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->group(function () {
     Route::get('/absensi/rekap', [AbsensiController::class, 'rekap'])->name('guru.absensi.rekap');
     Route::put('/guru/absensi/{id}', [AbsensiController::class, 'update'])->name('guru.absensi.update');
     Route::delete('/guru/absensi/{id}', [AbsensiController::class, 'destroy'])->name('guru.absensi.destroy');
-
-
+    // Daftar Siswa yang Diajar
+    Route::get('/siswa-diajar', [SiswaDiajarController::class, 'index'])->name('guru.siswa-diajar.index');
 });
 
 // 🔹 Dashboard Siswa

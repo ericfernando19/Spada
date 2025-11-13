@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\MataPelajaran;
+use App\Models\Kelas;
 
 class Course extends Model
 {
@@ -14,9 +15,10 @@ class Course extends Model
     protected $fillable = [
         'guru_id',
         'mata_pelajaran_id',
+        'kelas_id',
         'nama',
         'deskripsi',
-        'gambar', // ✅ tambahkan ini agar bisa menyimpan path gambar
+        'gambar',
     ];
 
     public function guru()
@@ -27,5 +29,9 @@ class Course extends Model
     public function mataPelajaran()
     {
         return $this->belongsTo(MataPelajaran::class, 'mata_pelajaran_id');
+    }
+    public function kelas()
+    {
+        return $this->belongsTo(Kelas::class, 'kelas_id');
     }
 }

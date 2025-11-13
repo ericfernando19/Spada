@@ -104,6 +104,7 @@
         <div class="menu">
             <a href="{{ route('guru.mata-pelajaran') }}">📘 Kelola Mata Pelajaran</a>
             <a href="{{ route('guru.absensi.index') }}">📋 Absensi Kelas</a>
+             <a href="{{ route('guru.siswa-diajar.index') }}">🧑‍🎓 Daftar Siswa yang Diajar</a>
         </div>
 
         <form action="{{ route('logout') }}" method="POST">
