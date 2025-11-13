@@ -6,24 +6,37 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Course;
 use App\Models\Materi;
+use App\Models\MataPelajaran;
+use App\Models\Kelas;
+use Illuminate\Support\Facades\Auth;
 
 class MataPelajaranController extends Controller
 {
-    public function index()
-    {
-        $courses = Course::latest()->get();
-        return view('guru.matapelajaran.index', compact('courses'));
-    }
+   public function index()
+{
+    $courses = Course::where('guru_id', Auth::id())->latest()->get();
+    $mataPelajaran = MataPelajaran::all(); // ambil semua mapel dari admin
+    $kelas = Kelas::all(); // ambil semua kelas dari admin
+
+    return view('guru.matapelajaran.index', compact('courses', 'mataPelajaran', 'kelas'));
+}
 
     public function store(Request $request)
     {
         $request->validate([
-            'nama' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
+            'mata_pelajaran_id' => 'required|exists:mata_pelajaran,id',
+            'kelas_id' => 'required|exists:kelas,id',
             'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $data = $request->only('nama', 'deskripsi');
+        $data = $request->only('mata_pelajaran_id', 'kelas_id');
+        $data['guru_id'] = Auth::id();
+
+        $mataPelajaran = MataPelajaran::findOrFail($request->mata_pelajaran_id);
+        $kelas = Kelas::findOrFail($request->kelas_id);
+
+        $data['nama'] = $mataPelajaran->nama_mapel;
+        $data['deskripsi'] = 'Course untuk ' . $mataPelajaran->nama_mapel . ' di kelas ' . $kelas->nama_kelas;
 
         if ($request->hasFile('gambar')) {
             $path = $request->file('gambar')->store('mata_pelajaran', 'public');
@@ -38,20 +51,20 @@ class MataPelajaranController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'nama' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
             'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         $course = Course::findOrFail($id);
-        $data = $request->only('nama', 'deskripsi');
+        $data = [];
 
         if ($request->hasFile('gambar')) {
             $path = $request->file('gambar')->store('mata_pelajaran', 'public');
             $data['gambar'] = $path;
         }
 
-        $course->update($data);
+        if (!empty($data)) {
+            $course->update($data);
+        }
 
         return redirect()->back()->with('success', 'Mata pelajaran berhasil diperbarui!');
     }
@@ -67,10 +80,8 @@ class MataPelajaranController extends Controller
     public function isi($id)
     {
         $course = Course::findOrFail($id);
-
-        // sementara biar gak error, bikin koleksi kosong
         $materi = Materi::where('course_id', $id)->latest()->get();
+
         return view('guru.matapelajaran.isi', compact('course', 'materi'));
     }
-
 }

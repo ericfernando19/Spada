@@ -1,210 +1,118 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Mata Pelajaran</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        body {
-            background: #f4fff6;
-            font-family: 'Poppins', sans-serif;
-        }
-        .course-card {
-            position: relative;
-            background: #fff;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .course-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 18px rgba(0,0,0,0.1);
-        }
-        .course-image {
-            width: 100%;
-            height: 130px;
-            object-fit: cover;
-            background: #e0f2f1;
-        }
-        .course-content {
-            padding: 15px;
-        }
-        .course-title {
-            color: #2e7d32;
-            font-weight: 600;
-            font-size: 1rem;
-        }
-        .course-desc {
-            color: #555;
-            font-size: 0.9rem;
-            min-height: 50px;
-        }
-        .dropdown-toggle::after {
-            display: none;
-        }
-        .badge-semester {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: #1565c0;
-            color: #fff;
-            font-size: 0.8rem;
-            border-radius: 5px;
-            padding: 4px 8px;
-        }
-    </style>
-</head>
-<body class="py-5">
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Kelola Mata Pelajaran yang Diajar') }}
+        </h2>
+    </x-slot>
 
-<div class="container">
-    <h2 class="mb-4 text-success fw-bold text-center">📘 Kelola Mata Pelajaran</h2>
+    <div class="py-10">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white shadow-md sm:rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">
+                    Daftar Mata Pelajaran Anda
+                </h3>
 
-    <!-- Tombol Tambah, Kembali -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <button class="btn btn-outline-success" onclick="window.history.back()">
-            <i class="bi bi-arrow-left"></i> Kembali
-        </button>
-        <button class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#tambahModal">
-            + Tambah Mata Pelajaran
-        </button>
-    </div>
-
-    <!-- Pesan Sukses -->
-    @if(session('success'))
-        <div class="alert alert-success text-center">{{ session('success') }}</div>
-    @endif
-
-    <!-- Grid Course -->
-    <div class="row g-4">
-        @forelse($courses as $course)
-            <div class="col-md-4 col-sm-6">
-                <div class="course-card">
-                    <!-- Dropdown (Pindah ke luar link) -->
-                    <div class="dropdown position-absolute top-0 end-0 p-2">
-                        <button class="btn btn-sm btn-light border-0 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-three-dots-vertical"></i>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                            <li>
-                                <a class="dropdown-item text-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ $course->id }}">✏️ Edit</a>
-                            </li>
-                            <li>
-                                <form action="{{ route('guru.mata-pelajaran.destroy', $course->id) }}" method="POST">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="dropdown-item text-danger" onclick="return confirm('Yakin ingin menghapus mata pelajaran ini?')">🗑 Hapus</button>
-                                </form>
-                            </li>
-                        </ul>
+                {{-- Alert Sukses --}}
+                @if (session('success'))
+                    <div class="mb-4 p-4 rounded-md bg-green-100 border border-green-300 text-green-700">
+                        {{ session('success') }}
                     </div>
+                @endif
 
-                    <!-- Link ke halaman isi -->
-                    <a href="{{ route('guru.mata-pelajaran.isi', $course->id) }}" class="text-decoration-none text-dark d-block">
-                        <!-- Gambar -->
-                        @if($course->gambar)
-                            <img src="{{ asset('storage/' . $course->gambar) }}" class="course-image" alt="{{ $course->nama }}">
-                        @else
-                            <img src="https://via.placeholder.com/400x150?text=Tidak+Ada+Gambar" class="course-image" alt="default">
-                        @endif
+                {{-- Tombol Kembali --}}
+                <a href="{{ route('guru.dashboard') }}"
+                   class="inline-flex items-center px-4 py-2 mb-6 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition">
+                    ← Kembali ke Dashboard
+                </a>
 
-                        <div class="course-content">
-                            <h5 class="course-title">{{ $course->nama }}</h5>
-                            <p class="course-desc">{{ $course->deskripsi ?? 'Tidak ada deskripsi.' }}</p>
-                            <div class="progress mt-2" style="height: 6px;">
-                                <div class="progress-bar bg-primary" style="width: 100%"></div>
-                            </div>
-                            <small class="text-muted">100% complete</small>
+                {{-- Form Tambah Mata Pelajaran --}}
+                <form action="{{ route('guru.mata-pelajaran.store') }}" method="POST" enctype="multipart/form-data"
+                      class="space-y-5 mb-8">
+                    @csrf
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label for="mata_pelajaran_id" class="block text-sm font-medium text-gray-700 mb-1">
+                                Pilih Mata Pelajaran
+                            </label>
+                            <select name="mata_pelajaran_id" id="mata_pelajaran_id"
+                                    class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">-- Pilih Mata Pelajaran --</option>
+                                @foreach ($mataPelajaran as $mapel)
+                                    <option value="{{ $mapel->id }}">{{ $mapel->nama_mapel }}</option>
+                                @endforeach
+                            </select>
                         </div>
-                    </a>
-                </div>
-            </div>
 
-            <!-- Modal Edit -->
-            <div class="modal fade" id="editModal{{ $course->id }}" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <form action="{{ route('guru.mata-pelajaran.update', $course->id) }}" method="POST" enctype="multipart/form-data">
-                            @csrf
-                            @method('PUT')
-                            <div class="modal-header">
-                                <h5 class="modal-title">Edit Mata Pelajaran</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <label>Nama Mata Pelajaran</label>
-                                    <input type="text" name="nama" class="form-control" value="{{ $course->nama }}" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label>Deskripsi</label>
-                                    <textarea name="deskripsi" class="form-control">{{ $course->deskripsi }}</textarea>
-                                </div>
-                                <div class="mb-3">
-                                    <label>Gambar</label>
-                                    <input type="file" name="gambar" class="form-control">
-                                    @if($course->gambar)
-                                        <small class="text-muted">Gambar saat ini: {{ basename($course->gambar) }}</small>
-                                    @endif
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                <button class="btn btn-success">Simpan</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        @empty
-            <div class="text-center text-muted mt-4">
-                <p>Belum ada mata pelajaran yang ditambahkan.</p>
-            </div>
-        @endforelse
-    </div>
-</div>
+                        <div>
+                            <label for="kelas_id" class="block text-sm font-medium text-gray-700 mb-1">
+                                Pilih Kelas
+                            </label>
+                            <select name="kelas_id" id="kelas_id"
+                                    class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">-- Pilih Kelas --</option>
+                                @foreach ($kelas as $k)
+                                    <option value="{{ $k->id }}">{{ $k->nama_kelas }}</option>
+                                @endforeach
+                            </select>
+                        </div>
 
-<!-- Modal Tambah -->
-<div class="modal fade" id="tambahModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form action="{{ route('guru.mata-pelajaran.store') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title">Tambah Mata Pelajaran</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label>Nama Mata Pelajaran</label>
-                        <input type="text" name="nama" class="form-control" required>
+                        <div>
+                            <label for="gambar" class="block text-sm font-medium text-gray-700 mb-1">
+                                Gambar (opsional)
+                            </label>
+                            <input type="file" name="gambar" id="gambar"
+                                   class="w-full text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label>Deskripsi</label>
-                        <textarea name="deskripsi" class="form-control"></textarea>
+
+                    <button type="submit"
+                            class="px-5 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
+                        Tambah Mata Pelajaran
+                    </button>
+                </form>
+
+                {{-- Daftar Mata Pelajaran --}}
+                @if ($courses->isEmpty())
+                    <p class="text-gray-600 text-center py-6 border-t">
+                        Belum ada mata pelajaran yang Anda ajar.
+                    </p>
+                @else
+                    <div class="overflow-x-auto border-t pt-4">
+                        <table class="min-w-full border border-gray-200 divide-y divide-gray-200 text-sm">
+                            <thead class="bg-gray-50 text-gray-700 uppercase text-xs font-semibold">
+                                <tr>
+                                    <th class="px-6 py-3 text-left">No</th>
+                                    <th class="px-6 py-3 text-left">Nama</th>
+                                    <th class="px-6 py-3 text-left">Deskripsi</th>
+                                    <th class="px-6 py-3 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-100">
+                                @foreach ($courses as $index => $course)
+                                    <tr class="hover:bg-gray-50 transition">
+                                        <td class="px-6 py-3">{{ $index + 1 }}</td>
+                                        <td class="px-6 py-3 font-medium text-gray-900">{{ $course->nama }}</td>
+                                        <td class="px-6 py-3 text-gray-700">{{ $course->deskripsi }}</td>
+                                        <td class="px-6 py-3 text-center">
+                                            <form action="{{ route('guru.mata-pelajaran.destroy', $course->id) }}"
+                                                  method="POST"
+                                                  onsubmit="return confirm('Yakin ingin menghapus mata pelajaran ini?')"
+                                                  class="inline-block">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                        class="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 text-xs transition">
+                                                    Hapus
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="mb-3">
-                        <label>Gambar (Thumbnail)</label>
-                        <input type="file" name="gambar" class="form-control" accept="image/*">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button class="btn btn-success">Simpan</button>
-                </div>
-            </form>
+                @endif
+            </div>
         </div>
     </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    // Cegah klik dropdown membuka link <a>
-    document.querySelectorAll('.dropdown').forEach(dropdown => {
-        dropdown.addEventListener('click', e => e.stopPropagation());
-    });
-</script>
-</body>
-</html>
+</x-app-layout>
