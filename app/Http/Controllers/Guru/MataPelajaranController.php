@@ -12,14 +12,17 @@ use Illuminate\Support\Facades\Auth;
 
 class MataPelajaranController extends Controller
 {
-   public function index()
-{
-    $courses = Course::where('guru_id', Auth::id())->latest()->get();
-    $mataPelajaran = MataPelajaran::all(); // ambil semua mapel dari admin
-    $kelas = Kelas::all(); // ambil semua kelas dari admin
+    public function index()
+    {
+        $courses = Course::where('guru_id', Auth::id())
+            ->with(['kelas', 'mataPelajaran']) // Tambahkan eager loading
+            ->latest()
+            ->get();
+        $mataPelajaran = MataPelajaran::all(); // ambil semua mapel dari admin
+        $kelas = Kelas::all(); // ambil semua kelas dari admin
 
-    return view('guru.matapelajaran.index', compact('courses', 'mataPelajaran', 'kelas'));
-}
+        return view('guru.matapelajaran.index', compact('courses', 'mataPelajaran', 'kelas'));
+    }
 
     public function store(Request $request)
     {
