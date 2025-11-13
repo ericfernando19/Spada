@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Materi;
 use App\Models\Course;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+
 
 class MateriController extends Controller
 {
@@ -14,33 +16,49 @@ class MateriController extends Controller
         $request->validate([
             'judul' => 'required|string|max:255',
             'konten' => 'required|string',
+            'file' => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4,webm,pdf|max:10240'
         ]);
 
-        Materi::create([
-            'course_id' => $courseId,
-            'judul' => $request->judul,
-            'konten' => $request->konten,
-        ]);
+        $materi = new \App\Models\Materi();
+        $materi->course_id = $courseId;
+        $materi->judul = $request->judul;
+        $materi->konten = $request->konten;
 
-        return back()->with('success', 'Materi berhasil ditambahkan!');
+        if ($request->hasFile('file')) {
+            $path = $request->file('file')->store('materi', 'public');
+            $materi->file = $path;
+        }
+
+        $materi->save();
+
+        return redirect()->back()->with('success', 'Materi berhasil ditambahkan!');
     }
 
     public function update(Request $request, $id)
     {
-        $materi = Materi::findOrFail($id);
-
         $request->validate([
             'judul' => 'required|string|max:255',
             'konten' => 'required|string',
+            'file' => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4,webm,pdf|max:10240'
         ]);
 
-        $materi->update([
-            'judul' => $request->judul,
-            'konten' => $request->konten,
-        ]);
+        $materi = \App\Models\Materi::findOrFail($id);
+        $materi->judul = $request->judul;
+        $materi->konten = $request->konten;
 
-        return back()->with('success', 'Materi berhasil diperbarui!');
+        if ($request->hasFile('file')) {
+            // hapus file lama kalau ada
+            if ($materi->file && Storage::disk('public')->exists($materi->file)) {
+                Storage::disk('public')->delete($materi->file);
+            }
+            $materi->file = $request->file('file')->store('materi', 'public');
+        }
+
+        $materi->save();
+
+        return redirect()->back()->with('success', 'Materi berhasil diperbarui!');
     }
+
 
     public function destroy($id)
     {

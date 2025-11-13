@@ -16,9 +16,11 @@
 
 <body class="p-4 bg-light">
 <div class="container">
+    <!-- Judul Halaman -->
     <h1 class="mb-3">{{ $course->nama }}</h1>
     <p>{{ $course->deskripsi }}</p>
 
+    <!-- Header Daftar Materi -->
     <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
         <h2>Daftar Materi</h2>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahMateriModal">
@@ -26,6 +28,7 @@
         </button>
     </div>
 
+    <!-- Notifikasi -->
     @if(session('success'))
         <script>
             Swal.fire({
@@ -38,13 +41,16 @@
         </script>
     @endif
 
+    <!-- Loop Materi -->
     @foreach($materi->sortBy('id') as $m)
         <div class="card mb-3 shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <button class="btn btn-link text-decoration-none text-start w-100" data-bs-toggle="collapse" data-bs-target="#materi-{{ $m->id }}">
+                <button class="btn btn-link text-decoration-none text-start w-100"
+                        data-bs-toggle="collapse" data-bs-target="#materi-{{ $m->id }}">
                     <strong>{{ $m->judul }}</strong>
                 </button>
 
+                <!-- Dropdown Aksi -->
                 <div class="dropdown">
                     <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
                         <i class="bi bi-three-dots-vertical"></i>
@@ -54,19 +60,16 @@
                         <li><button class="dropdown-item text-danger" onclick="hapusMateri('{{ route('materi.hapus', $m->id) }}')">🗑️ Hapus Materi</button></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#tambahSubMateriModal{{ $m->id }}">➕ Tambah Submateri</button></li>
-                        <li>
-                            <a href="{{ route('guru.soal.index', $m->id) }}" class="dropdown-item text-primary">
-                                🧩 Kelola Soal
-                            </a>
-                        </li>
+                        <li><a href="{{ route('guru.soal.index', $m->id) }}" class="dropdown-item text-primary">🧩 Kelola Soal</a></li>
                     </ul>
                 </div>
             </div>
 
-            {{-- Modal Edit Materi --}}
+            <!-- Modal Edit Materi -->
             <div class="modal fade" id="editMateriModal{{ $m->id }}" tabindex="-1">
                 <div class="modal-dialog">
-                    <form action="{{ route('materi.update', $m->id) }}" method="POST" class="modal-content" onsubmit="return showLoading(event)">
+                    <form action="{{ route('materi.update', $m->id) }}" method="POST"
+                          class="modal-content" onsubmit="return showLoading(event)">
                         @csrf
                         @method('PUT')
                         <div class="modal-header">
@@ -91,6 +94,7 @@
                 </div>
             </div>
 
+            <!-- Isi Materi -->
             <div id="materi-{{ $m->id }}" class="collapse">
                 <div class="card-body">
                     @if(!empty($m->konten))
@@ -98,7 +102,7 @@
                         <hr>
                     @endif
 
-                    {{-- Daftar Submateri --}}
+                    <!-- Daftar Submateri -->
                     @forelse($m->submateris as $sub)
                         <div class="border rounded p-3 mb-3 bg-white">
                             <div class="d-flex justify-content-between align-items-start">
@@ -127,10 +131,12 @@
             </div>
         </div>
 
-        {{-- Modal Tambah Submateri --}}
+        <!-- Modal Tambah Submateri -->
         <div class="modal fade" id="tambahSubMateriModal{{ $m->id }}" tabindex="-1">
             <div class="modal-dialog">
-                <form action="{{ route('submateri.store', $m->id) }}" method="POST" enctype="multipart/form-data" class="modal-content" onsubmit="return showLoading(event)">
+                <form action="{{ route('submateri.store', $m->id) }}" method="POST"
+                      enctype="multipart/form-data" class="modal-content"
+                      onsubmit="return showLoading(event)">
                     @csrf
                     <div class="modal-header">
                         <h5 class="modal-title">Tambah Submateri</h5>
@@ -160,10 +166,11 @@
     @endforeach
 </div>
 
-{{-- Modal Tambah Materi --}}
+<!-- Modal Tambah Materi -->
 <div class="modal fade" id="tambahMateriModal" tabindex="-1">
     <div class="modal-dialog">
-        <form action="{{ route('materi.tambah', $course->id) }}" method="POST" class="modal-content" onsubmit="return showLoading(event)">
+        <form action="{{ route('materi.tambah', $course->id) }}" method="POST"
+              class="modal-content" onsubmit="return showLoading(event)">
             @csrf
             <div class="modal-header">
                 <h5 class="modal-title">Tambah Materi</h5>
@@ -187,6 +194,7 @@
     </div>
 </div>
 
+<!-- Script -->
 <script>
     function showLoading(e) {
         e.preventDefault();
@@ -218,6 +226,7 @@
             }
         });
     }
+
     function hapusSubMateri(url) {
         Swal.fire({
             title: 'Hapus Submateri?',
@@ -237,5 +246,6 @@
         });
     }
 </script>
+
 </body>
 </html>

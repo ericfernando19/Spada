@@ -9,7 +9,8 @@ class Materi extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['course_id', 'judul', 'konten'];
+    protected $table = 'materis';
+    protected $fillable = ['course_id', 'judul', 'konten', 'file'];
 
     public function course()
     {
