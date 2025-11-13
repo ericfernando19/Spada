@@ -6,11 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $course->nama }}</title>
 
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
+    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
@@ -55,7 +58,7 @@
                         <div class="accordion-body">
 
                             {{-- =================================== --}}
-                            {{-- KODE PREVIEW FILE (DENGAN PDF EMBED) --}}
+                            {{-- KODE PREVIEW FILE (DENGAN PDF FIX)  --}}
                             {{-- =================================== --}}
                             @if ($item->file)
                                 @php
@@ -81,16 +84,14 @@
                                     @elseif ($extension == 'pdf')
                                         {{--
                                           PERUBAHAN DI SINI:
-                                          Menggunakan <iframe> untuk embed PDF
+                                          Kembali ke link biasa agar tidak error 'refused to connect'
                                         --}}
-                                        <iframe src="{{ $path }}"
-                                                width="100%"
-                                                height="600px"
-                                                class="rounded border"
-                                                style="background: #eee;">
-                                            Browser Anda tidak mendukung iframe,
-                                            <a href="{{ $path }}" target="_blank">klik di sini untuk melihat PDF</a>.
-                                        </iframe>
+                                        <a href="{{ $path }}" target="_blank" class="btn btn-info">
+                                            <i class="bi bi-file-earmark-pdf"></i> Lihat PDF di Tab Baru
+                                        </a>
+                                        <p class="text-muted small mt-2">
+                                            (Preview PDF langsung di halaman ini tidak didukung oleh server development lokal.)
+                                        </p>
 
                                     @else
                                         {{-- File Tipe Lain (docx, zip, dll) --}}
@@ -149,6 +150,7 @@
       ================================================
     --}}
 
+    <!-- Modal Tambah Materi -->
     <div class="modal fade" id="tambahMateriModal" tabindex="-1">
         <div class="modal-dialog">
             <form action="{{ route('materi.tambah', $course->id) }}" method="POST" class="modal-content"

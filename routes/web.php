@@ -123,10 +123,17 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->group(function () {
     Route::post('/submateri/{id}/tugas', [TugasController::class, 'store'])->name('tugas.store');
     Route::put('/tugas/{id}', [TugasController::class, 'update'])->name('tugas.update');
     Route::delete('/tugas/{id}', [TugasController::class, 'destroy'])->name('tugas.destroy');
-    Route::get('/materi/{materi_id}/soal/create', [SoalController::class, 'create'])->name('guru.soal.create');
+    // Route::get('/materi/{materi_id}/soal/create', [SoalController::class, 'create'])->name('guru.soal.create'); // Baris ini duplikat, ada di bawah
 
 
-    // 🔹 Soal (per materi/pertemuan)
+    // 🔹 Posttest (Soal Pilgan & Esai Mix) <-- RUTE BARU DITAMBAHKAN DI SINI
+    Route::get('/tugas/{tugas}/manage-soal', [TugasController::class, 'manageSoal'])
+         ->name('guru.tugas.manageSoal');
+    Route::post('/tugas/{tugas}/save-soal', [SoalController::class, 'storeForTugas'])
+         ->name('guru.soal.storeForTugas');
+
+
+    // 🔹 Soal (LATIHAN per materi)
     Route::get('/materi/{materi_id}/soal', [SoalController::class, 'index'])->name('guru.soal.index');
     Route::get('/materi/{materi_id}/soal/create', [SoalController::class, 'create'])->name('guru.soal.create');
     Route::post('/materi/{materi_id}/soal', [SoalController::class, 'store'])->name('guru.soal.store');
@@ -143,7 +150,7 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->group(function () {
     // 🔹 Daftar Siswa yang Diajar
     Route::get('/siswa-diajar', [SiswaDiajarController::class, 'index'])->name('guru.siswa-diajar.index');
 
-    // 🔹 Detail Mata Pelajaran
+    // 🔹 Detail Mata Pelajaran (show)
     Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(function () {
         Route::get('/mata-pelajaran/{id}', [GuruMataPelajaranController::class, 'show'])->name('mata-pelajaran.show');
     });
@@ -151,7 +158,6 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->group(function () {
     // 🔹 Tambah Materi (form + simpan)
     Route::get('/materi/create/{course}', [MateriController::class, 'create'])->name('guru.materi.create');
     Route::post('/materi/store/{courseId}', [MateriController::class, 'store'])->name('guru.materi.store');
-
 
 });
 
